@@ -31,9 +31,17 @@
             color: #fff; /* Set delete button text color */
             border: none; /* Remove button border */
         }
+        /* Different shades of blue for table rows */
+        .table tr:nth-child(even) {
+            background-color: #e7f0ff; /* Light blue */
+        }
+        .table tr:nth-child(odd) {
+            background-color: #cfe2f3; /* Dark blue */
+        }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h1 class="text-center my-4">Persons</h1>
 
@@ -59,20 +67,23 @@
             <td th:text="${person.role}"></td>
             <!-- Add your action buttons or links here -->
             <td>
-                <!-- Edit button -->
-                <button class="edit-btn" onclick="editPerson('${person.id}')">Edit</button>
-                <!-- Delete button -->
-                <button class="delete-btn" onclick="deletePerson('${person.id}')">Delete</button>
+                <form th:action="@{'/person/delete/' + ${person.id}}" method="post">
+                    <button type="submit" class="btn delete-btn">Delete</button>
+                </form>
+                <div>
+                    <a class="btn btn-primary edit-btn" th:href="@{'/person/edit/' + ${person.id}}">Edit</a>
+                </div>
+
             </td>
         </tr>
         </tbody>
-
     </table>
 
-    <a class="btn btn-primary" href="/person/create">Create Person</a>
+    <div class="text-center">
+        <a class="btn btn-primary create-btn" href="/person/createPerson">Create Person</a>
+    </div>
 
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>

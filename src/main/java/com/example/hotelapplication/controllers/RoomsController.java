@@ -1,9 +1,11 @@
 package com.example.hotelapplication.controllers;
 
+import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.services.RoomsServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.Banner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,11 +39,15 @@ public class RoomsController {
      *
      * @return ResponseEntity containing the list of RoomsDTOs and HttpStatus OK.
      */
-    @GetMapping()
+    @GetMapping("/all")
     public ModelAndView getRooms() {
         List<RoomsDTO> rooms = roomsServices.findRooms();
         ModelAndView modelAndView = new ModelAndView("rooms");
         modelAndView.addObject("rooms", rooms);
+        for(RoomsDTO roomsDTO:rooms){
+            List<ReservationDTO> reservationDTOS = roomsDTO.getReservationDTOS();
+            modelAndView.addObject("reservation", reservationDTOS);
+        }
         return modelAndView;
     }
 
@@ -62,16 +68,16 @@ public class RoomsController {
         }
     }
 
-    /**
-     * Inserts a new room into the database.
-     *
-     * @param roomsDTO The RoomsDTO object to be inserted.
-     * @return ResponseEntity containing the generated UUID for the newly inserted room and HttpStatus CREATED.
-     */
-    @PostMapping()
-    public ResponseEntity<UUID> insertRoom(@Valid @RequestBody RoomsDTO roomsDTO) {
+    @GetMapping("/createRooms")
+    public ModelAndView create(){
+        return new ModelAndView("createRooms");
+    }
+    @PostMapping("/create")
+    public ModelAndView insertRoom(@ModelAttribute RoomsDTO roomsDTO) {
         UUID roomId = roomsServices.insertRooms(roomsDTO);
-        return new ResponseEntity<>(roomId, HttpStatus.CREATED);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/rooms/all");
+        return modelAndView;
     }
 
     /**

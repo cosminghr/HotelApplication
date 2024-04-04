@@ -1,7 +1,9 @@
 package com.example.hotelapplication.services;
 
+import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.builders.RoomsBuilder;
+import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
@@ -118,8 +120,8 @@ public class RoomsServices {
         if (optionalRooms.isPresent()) {
             Rooms room = optionalRooms.get();
             roomsRepository.deleteById(id);
-            if (room.getReservation() != null) {
-                reservationRepository.deleteById(room.getReservation().getReservationId());
+            if (room.getReservations() != null) {
+                //reservationRepository.deleteById(room.getReservations().get(0).getReservationId());
             }
             LOGGER.info("Room with id {} deleted successfully.", id);
         } else {

@@ -1,6 +1,8 @@
 package com.example.hotelapplication.controllers;
 
+import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
+import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.services.PersonServices;
 import com.example.hotelapplication.services.ReservationServices;
 import com.example.hotelapplication.services.RoomsServices;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,21 +26,15 @@ import java.util.UUID;
 @RequestMapping(value = "/reservations")
 public class ReservationController {
     private final ReservationServices reservationServices;
-    private final PersonServices personServices;
-    private final RoomsServices roomsServices;
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationController.class);
 
     /**
      * Constructor for ReservationController.
      *
      * @param reservationServices The service for handling Reservation-related operations.
-     * @param personServices      The service for handling Person-related operations.
-     * @param roomsServices       The service for handling Rooms-related operations.
      */
-    public ReservationController(ReservationServices reservationServices, PersonServices personServices, RoomsServices roomsServices) {
+    public ReservationController(ReservationServices reservationServices) {
         this.reservationServices = reservationServices;
-        this.personServices = personServices;
-        this.roomsServices = roomsServices;
     }
 
     /**
@@ -45,7 +42,7 @@ public class ReservationController {
      *
      * @return ResponseEntity containing the list of ReservationDTOs and HttpStatus OK.
      */
-    @GetMapping()
+    @GetMapping("/all")
     public ModelAndView getReservations() {
         List<ReservationDTO> reservations = reservationServices.findReservations();
         ModelAndView modelAndView = new ModelAndView("reservations");
@@ -69,6 +66,30 @@ public class ReservationController {
         }
     }
 
+    @GetMapping("/edit/{id}")
+    public ModelAndView edit(@PathVariable("id") UUID id){
+        ReservationDTO reservation = reservationServices.findReservationsById(id);
+        PersonDTO person = reservation.getPerson();
+        List<RoomsDTO> rooms = reservation.getRooms();
+        ModelAndView modelAndView = new ModelAndView("editReservations");
+        modelAndView.addObject("reservation", reservation);
+        modelAndView.addObject("rooms", rooms);
+        modelAndView.addObject("person", person);
+        return modelAndView;
+    }
+
+    @GetMapping("/createReservations")
+    public ModelAndView create() {
+        List<ReservationDTO> reservation = reservationServices.findReservations();
+        List<RoomsDTO> rooms = reservationServices.findAllRooms();
+        List<PersonDTO> persons = reservationServices.findAllPersons(); // Fetch all persons from the repository
+        ModelAndView modelAndView = new ModelAndView("createReservations");
+        modelAndView.addObject("persons", persons); // Add the list of persons to the model
+        modelAndView.addObject("rooms", rooms);
+        modelAndView.addObject("reservation", reservation);
+        return modelAndView;
+    }
+
     /**
      * Inserts a new reservation into the database.
      *
@@ -76,16 +97,21 @@ public class ReservationController {
      * @return ResponseEntity containing the generated UUID for the newly inserted reservation and HttpStatus CREATED,
      * or HttpStatus.BAD_REQUEST if insertion fails.
      */
-    @PostMapping()
-    public ResponseEntity<UUID> insertReservation(@Valid @RequestBody ReservationDTO reservationDTO) {
-        UUID reservationID = reservationServices.insertReservations(reservationDTO);
-        if (reservationID != null) {
-            return new ResponseEntity<>(reservationID, HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    @PostMapping("/create")
+    public ModelAndView insertReservation(@ModelAttribute ReservationDTO reservationDTO, @RequestParam("personId") UUID idPerson, @RequestParam("roomIds") List<UUID> idRooms) {
+        PersonDTO personDTO = reservationServices.findPersonByIdInReservation(idPerson);
+        List<RoomsDTO> roomsDTOs = new ArrayList<>();
+        for(UUID roomId : idRooms){
+            RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
+            roomsDTOs.add(roomsDTO);
         }
+        reservationDTO.setRooms(roomsDTOs);
+        reservationDTO.setPerson(personDTO);
+        reservationServices.insertReservations(reservationDTO);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/reservations/all");
+        return modelAndView;
     }
-
     /**
      * Updates an existing reservation in the database.
      *
@@ -93,16 +119,27 @@ public class ReservationController {
      * @return ResponseEntity with a success message and HttpStatus OK if update is successful,
      * or HttpStatus.NOT_FOUND if the reservation is not found.
      */
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updateReservation(@PathVariable("id") UUID id, @Valid @RequestBody ReservationDTO reservationDTO) {
+    @PostMapping("edit/{id}")
+    public ModelAndView updateReservation(@PathVariable("id") UUID id,@ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms) {
         reservationDTO.setReservationId(id);
-        ReservationDTO updatedReservationDTO = reservationServices.updateReservations(reservationDTO);
-        if (updatedReservationDTO != null) {
-            return new ResponseEntity<>("Reservation with the id = " + reservationDTO.getReservationId() + " was successfully updated.", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        List<RoomsDTO> roomsDTOs = new ArrayList<>();
+        for(UUID roomId : idRooms){
+            RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
+            roomsDTOs.add(roomsDTO);
         }
+        reservationDTO.setRooms(roomsDTOs);
+        System.out.println(reservationDTO.toString());
+        ReservationDTO updatedReservationDTO = reservationServices.updateReservations(reservationDTO);
+        ModelAndView modelAndView = new ModelAndView();
+        if (updatedReservationDTO != null) {
+            modelAndView.addObject("message", "Reservation with the id = " + reservationDTO.getReservationId() + " was successfully updated.");
+            modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
+        }else{
+            modelAndView.setViewName("redirect:/reservations/all");
+        }
+        return modelAndView;
     }
+
 
     /**
      * Deletes a reservation from the database.
@@ -111,9 +148,11 @@ public class ReservationController {
      * @return ResponseEntity with a success message and HttpStatus OK if deletion is successful,
      * or HttpStatus.NOT_FOUND if the reservation is not found.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteReservation(@PathVariable("id") UUID id) {
+    @PostMapping("/delete/{id}")
+    public ModelAndView deleteReservation(@PathVariable("id") UUID id) {
         reservationServices.deleteReservations(id);
-        return new ResponseEntity<>("Reservation successfully deleted!", HttpStatus.OK);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/reservations/all");
+        return modelAndView;
     }
 }

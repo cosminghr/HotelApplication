@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Setter
@@ -29,6 +30,6 @@ public class RoomsDTO {
 
     private int roomCost;
 
-    private ReservationDTO reservation;
+    private List<ReservationDTO> reservationDTOS;
 
 }

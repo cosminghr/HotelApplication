@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Reservation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+</head>
+<body>
+<div class="container">
+  <form th:action="@{'/reservations/edit/' + ${reservation.reservationId}}" method="post">
+    <h1 class="text-center my-4">Edit reservation</h1>
+
+    <div class="mb-3">
+      <label for="reservationStart" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="reservationStart" name="reservationStart" th:value="${reservation.reservationStart}" required>
+      <div class="invalid-feedback">Start Date is required</div>
+    </div>
+    <div class="mb-3">
+      <label for="reservationEnd" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="reservationEnd" name="reservationEnd" th:value="${reservation.reservationEnd}" required>
+      <div class="invalid-feedback">End Date is required</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="roomIds" class="form-label">Room Numbers</label>
+      <!-- Dropdown menu for selecting room numbers -->
+      <select id="roomIds" name="roomIds" multiple="multiple" class="form-select" required>
+        <option value="" selected disabled>Select Room Id</option>
+        <!-- Populate the dropdown with room IDs from reservations -->
+        <option th:each="room : ${reservation.rooms}" th:value="${room.roomId}" th:text="${room.roomId}" class="remove-room"></option>
+      </select>
+      <div class="invalid-feedback">At least one room must be selected</div>
+    </div>
+
+    <!-- Button to remove selected room ID -->
+    <button type="button" class="btn btn-danger" id="removeRoomId">Remove Selected Room</button>
+
+    <button type="submit" class="btn btn-primary">Confirm Edit</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+  // Add event listener to remove room ID button
+  document.getElementById('removeRoomId').addEventListener('click', function() {
+    var selectElement = document.getElementById('roomIds');
+    // Remove the selected option
+    selectElement.options[selectElement.selectedIndex].remove();
+  });
+</script>
+</body>
+</html>

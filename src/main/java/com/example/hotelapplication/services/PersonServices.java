@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -135,7 +136,7 @@ public class PersonServices {
                 List<Rooms> rooms = reservation.getRooms();
                 for (Rooms room : rooms) {
                     // Remove the association with the reservation
-                    room.setReservation(null);
+                    room.setReservations(null);
                     room.setRoomStatus("free");
                     roomsRepository.save(room);
                 }

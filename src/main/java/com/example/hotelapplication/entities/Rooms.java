@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 @Entity
@@ -33,8 +34,8 @@ public class Rooms {
     private String roomDescription;
     @Column(name = "roomCost", nullable = false)
     private int roomCost;
-    @ManyToOne
-    @JoinColumn(name = "reservationId")
-    private Reservation reservation;
+    @ManyToMany(mappedBy = "rooms", fetch = FetchType.EAGER)
+    private List<Reservation> reservations;
+
 
 }

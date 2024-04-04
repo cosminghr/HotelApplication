@@ -1,3 +1,4 @@
+
 package com.example.hotelapplication.entities;
 
 import jakarta.persistence.*;
@@ -26,11 +27,14 @@ public class Reservation {
 
     private UUID reservationId;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "personId", referencedColumnName = "id")
     private Person person;
 
-    @OneToMany(mappedBy = "reservation",cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany( fetch = FetchType.EAGER)
+    @JoinTable(name = "reservations_rooms",
+            joinColumns =  @JoinColumn(name = "reservationId"),
+            inverseJoinColumns = @JoinColumn(name = "roomId"))
     private List<Rooms> rooms;
 
     @Column(name = "reservationStart", nullable = false)
@@ -41,3 +45,4 @@ public class Reservation {
     private int reservationCost;
 
 }
+

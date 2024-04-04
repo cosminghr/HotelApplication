@@ -1,8 +1,11 @@
 package com.example.hotelapplication.services;
 
+import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
+import com.example.hotelapplication.dtos.builders.PersonBuilder;
 import com.example.hotelapplication.dtos.builders.ReservationBuilder;
+import com.example.hotelapplication.dtos.builders.RoomsBuilder;
 import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
@@ -16,10 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +57,41 @@ public class ReservationServices {
                 .collect(Collectors.toList());
     }
 
+    public List<RoomsDTO> findAllRooms() {
+        List<Rooms> rooms = roomsRepository.findAll();
+        return rooms.stream()
+                .map(RoomsBuilder::etoRoomsDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    public List<PersonDTO> findAllPersons() {
+        List<Person> persons = personRepository.findAll();
+        return persons.stream()
+                .map(PersonBuilder::etoPersonDTO)
+                .collect(Collectors.toList());
+    }
+
+    public RoomsDTO findRoomByIdInReservation(UUID id) {
+        Optional<Rooms> optionalRooms = roomsRepository.findById(id);
+        if (optionalRooms.isPresent()) {
+            LOGGER.info("Room with id {} was found in db", id);
+            return RoomsBuilder.etoRoomsDTO(optionalRooms.get());
+        } else {
+            LOGGER.error("Room with id {} was not found in db", id);
+            return null;
+        }
+    }
+
+    public PersonDTO findPersonByIdInReservation(UUID id) {
+        Optional<Person> personOptional = personRepository.findById(id);
+        if (!personOptional.isPresent()) {
+            LOGGER.error("Person with id {} was not found in db", id);
+            return null;
+        }
+        LOGGER.info("Person with id {} was found in db", id);
+        return PersonBuilder.etoPersonDTO(personOptional.get());
+    }
     /**
      * Retrieves a specific reservation by ID.
      *
@@ -92,51 +127,38 @@ public class ReservationServices {
             return null;
         }
 
-        // Iterate over each room in the reservation
+        List<RoomsDTO> roomsDTOsForRes = new ArrayList<>();
         for (RoomsDTO roomDTO : roomsDTOs) {
-            // Check if room with provided ID exists
             Optional<Rooms> roomOptional = roomsRepository.findById(roomDTO.getRoomId());
             if (roomOptional.isEmpty()) {
                 LOGGER.warn("Room with id {} not found. Reservation creation aborted.", roomDTO.getRoomId());
                 return null;
             }
-
-            Rooms room = roomOptional.get();
-
-            // Check if room details match
-            if (!roomMatches(room, roomDTO)) {
-                LOGGER.warn("Room details provided do not match the details of the room with id {}. Reservation creation aborted.", room.getRoomId());
-                return null;
+            if (roomDTO.getReservationDTOS() == null) {
+                roomDTO.setReservationDTOS(new ArrayList<>());
             }
-
-            if (isRealTime(reservationDTO)) {
-                if (room.getRoomStatus().contains("free")) {
-                    // Calculate total cost for the current room
-                    int roomCost = calculateTotalCost(reservationDTO);
-                    reservationDTO.setReservationCost(roomCost);
-
-                    // Create and save reservation for the current room
-                    Reservation reservation = ReservationBuilder.stoEntity(reservationDTO);
-                    reservation = reservationRepository.save(reservation);
-
-                    // Update room status and associate reservation with room
-                    room.setReservation(reservation);
-                    room.setRoomStatus("booked");
-                    roomsRepository.save(room);
-
-                    LOGGER.info("Reservation with id {} was inserted for room with id {} in db", reservation.getReservationId(), room.getRoomId());
-                } else {
-                    LOGGER.warn("The reservation cannot be made for room with id {} because it is already booked!", room.getRoomId());
-                    return null;
-                }
-            } else {
-                LOGGER.warn("Reservation start date is in the past or end date is before start date. Reservation creation aborted.");
+            if (!isRoomAvailableForPeriodWithoutCurrentReservation(roomDTO.getRoomId(), reservationDTO.getReservationStart(), reservationDTO.getReservationEnd(), reservationDTO.getReservationId())) {
+                LOGGER.warn("Room with id {} is not available for the specified period. Reservation creation aborted.", roomDTO.getRoomId());
                 return null;
+            }else{
+                roomsDTOsForRes.add(roomDTO);
+                roomsDTOsForRes.get(0).getReservationDTOS().add(reservationDTO);
             }
         }
 
-        // Return the reservation id of the first room (assuming all rooms have the same reservation id)
-        return reservationDTO.getRooms().get(0).getRoomId();
+        if (!isRealTime(reservationDTO)) {
+            LOGGER.warn("Reservation start date is in the past or end date is before start date. Reservation creation aborted.");
+            return null;
+        }
+
+        reservationDTO.setReservationCost(calculateTotalCost(reservationDTO));
+        reservationDTO.setRooms(roomsDTOsForRes);
+
+        Reservation reservation = ReservationBuilder.stoEntity(reservationDTO);
+        reservation = reservationRepository.save(reservation);
+
+        LOGGER.info("Reservation with id {} was inserted in db", reservation.getReservationId());
+        return reservation.getReservationId();
     }
 
 
@@ -147,6 +169,7 @@ public class ReservationServices {
      * @return The updated ReservationDTO object, or null if update fails.
      */
     public ReservationDTO updateReservations(ReservationDTO reservationDTO) {
+        // Retrieve the existing reservation from the database
         Optional<Reservation> optionalReservation = reservationRepository.findById(reservationDTO.getReservationId());
         if (optionalReservation.isEmpty()) {
             LOGGER.warn("Reservation with id {} not found. Update operation aborted.", reservationDTO.getReservationId());
@@ -155,10 +178,17 @@ public class ReservationServices {
 
         Reservation existingReservation = optionalReservation.get();
 
-        // Check if the reservation is in real-time
-        if (!isRealTime(reservationDTO)) {
-            LOGGER.warn("Reservation start date is in the past or end date is before start date. Update operation aborted.");
-            return null;
+        // Check if the rooms are available for the updated period
+        List<UUID> roomIds = reservationDTO.getRooms().stream()
+                .map(RoomsDTO::getRoomId)
+                .toList();
+        LocalDate newStart = reservationDTO.getReservationStart();
+        LocalDate newEnd = reservationDTO.getReservationEnd();
+        for (UUID roomId : roomIds) {
+            if (!isRoomAvailableForPeriodWithoutCurrentReservation(roomId, newStart, newEnd, existingReservation.getReservationId())) {
+                LOGGER.warn("Room with id {} is not available for the updated period. Update operation aborted.", roomId);
+                return null;
+            }
         }
 
         // Update reservation fields
@@ -166,7 +196,7 @@ public class ReservationServices {
         existingReservation.setReservationEnd(reservationDTO.getReservationEnd());
         existingReservation.setReservationCost(calculateTotalCost(reservationDTO));
 
-        // Save updated reservation
+        // Save the updated reservation in the database
         Reservation updatedReservation = reservationRepository.save(existingReservation);
 
         LOGGER.info("Reservation with id {} was updated in db", existingReservation.getReservationId());
@@ -184,7 +214,7 @@ public class ReservationServices {
             Reservation reservation = optionalReservation.get();
             List<Rooms> rooms = reservation.getRooms();
             for (Rooms room : rooms) {
-                room.setReservation(null);
+                room.getReservations().remove(reservation);
                 room.setRoomStatus("free");
                 roomsRepository.save(room);
             }
@@ -202,14 +232,27 @@ public class ReservationServices {
      * @return The total cost of the reservation.
      */
     public int calculateTotalCost(ReservationDTO reservationDTO) {
-        LocalDate startDate = reservationDTO.getReservationStart();
-        LocalDate endDate = reservationDTO.getReservationEnd();
-        long differenceInDays = ChronoUnit.DAYS.between(startDate, endDate);
-        //long differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
-        int numberOfNights = (int) differenceInDays;
-        int roomCost = reservationDTO.getRooms().get(0).getRoomCost();
-        return numberOfNights * roomCost;
+        List<RoomsDTO> roomsDTOS = reservationDTO.getRooms();
+        int totalCost = 0; // Initialize total cost
+
+        // Iterate through each room in the reservation
+        for(RoomsDTO roomDTO: roomsDTOS) {
+            LocalDate startDate = reservationDTO.getReservationStart();
+            LocalDate endDate = reservationDTO.getReservationEnd();
+            long differenceInDays = ChronoUnit.DAYS.between(startDate, endDate);
+            int numberOfNights = (int) differenceInDays;
+
+            // Get the cost of the current room and calculate the cost for the stay
+            int roomCost = roomDTO.getRoomCost();
+            int roomTotalCost = numberOfNights * roomCost;
+
+            // Add the cost of the current room to the total cost
+            totalCost += roomTotalCost;
+        }
+
+        return totalCost;
     }
+
 
     /**
      * Checks if the reservation is in real-time (not in the past and end date is after start date).
@@ -241,4 +284,39 @@ public class ReservationServices {
                 room.getRoomRate() == roomDTO.getRoomRate() &&
                 room.getRoomType().equals(roomDTO.getRoomType());
     }
+
+    public boolean isRoomAvailableForPeriodWithoutCurrentReservation(UUID roomId, LocalDate newReservationStart, LocalDate newReservationEnd, UUID currentReservationId) {
+        // Retrieve the room by its ID
+        Optional<Rooms> roomOptional = roomsRepository.findById(roomId);
+        if (roomOptional.isEmpty()) {
+            LOGGER.warn("Room with id {} not found.", roomId);
+            return false; // Room not found, consider it unavailable
+        }
+        Rooms room = roomOptional.get();
+
+        // Retrieve all reservations for the room
+        List<Reservation> reservations = room.getReservations();
+
+        // Check if there are any reservations for the room
+        if (reservations == null || reservations.isEmpty()) {
+            return true; // No reservations, room is available
+        }
+
+        // Check if the room is available for the given period excluding the current reservation being updated
+        for (Reservation reservation : reservations) {
+            if (!reservation.getReservationId().equals(currentReservationId)) {
+                LocalDate reservationStart = reservation.getReservationStart();
+                LocalDate reservationEnd = reservation.getReservationEnd();
+
+                // Check for overlap between existing reservation and new reservation
+                if (!(newReservationEnd.isBefore(reservationStart) || newReservationStart.isAfter(reservationEnd))) {
+                    return false; // Room is not available for the given period
+                }
+            }
+        }
+
+        return true; // Room is available for the given period excluding the current reservation
+    }
+
+
 }
