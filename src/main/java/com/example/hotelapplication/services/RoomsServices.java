@@ -7,6 +7,8 @@ import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -114,17 +116,16 @@ public class RoomsServices {
      *
      * @param id The UUID of the room to be deleted.
      */
+
+    @Transactional
     public void deleteRooms(UUID id) {
         Optional<Rooms> optionalRooms = roomsRepository.findById(id);
         if (optionalRooms.isPresent()) {
             Rooms room = optionalRooms.get();
-            roomsRepository.deleteById(id);
-            if (room.getReservations() != null) {
-                //reservationRepository.deleteById(room.getReservations().get(0).getReservationId());
-            }
-            LOGGER.info("Room with id {} deleted successfully.", id);
-        } else {
-            LOGGER.error("Room with id {} not found. Delete operation aborted.", id);
+            List<Reservation> reservations = room.getReservations();
+            reservationRepository.deleteAll(reservations);
+            roomsRepository.delete(room);
         }
     }
+
 }

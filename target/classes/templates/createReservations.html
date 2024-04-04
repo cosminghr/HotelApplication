@@ -27,7 +27,7 @@
       <select id="roomIds" name="roomIds" multiple="multiple" class="form-select" required>
         <option value="" selected disabled>Rooms</option>
         <!-- Iterate over the list of rooms to populate the dropdown -->
-        <option th:each="room : ${rooms}" th:if="${room.roomStatus == 'free'}" th:value="${room.roomId}" th:text="${room.roomId}"></option>
+        <option th:each="room : ${rooms}" th:value="${room.roomId}" th:text="${room.roomId}"></option>
       </select>
 
       <div class="invalid-feedback">At least one room must be selected</div>

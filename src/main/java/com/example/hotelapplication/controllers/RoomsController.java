@@ -1,5 +1,6 @@
 package com.example.hotelapplication.controllers;
 
+import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.services.RoomsServices;
@@ -80,23 +81,20 @@ public class RoomsController {
         return modelAndView;
     }
 
-    /**
-     * Updates an existing room in the database.
-     *
-     * @param roomId   The UUID of the room to be updated.
-     * @param roomsDTO The updated RoomsDTO object.
-     * @return ResponseEntity with a success message and HttpStatus OK, or NOT_FOUND if the room is not found.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updateRoom(@PathVariable("id") UUID roomId, @Valid @RequestBody RoomsDTO roomsDTO) {
+    @GetMapping("/edit/{id}")
+    public ModelAndView edit(@PathVariable("id") UUID id){
+        RoomsDTO room = roomsServices.findRoomById(id);
+        ModelAndView modelAndView = new ModelAndView("editRooms");
+        modelAndView.addObject("room", room);
+        return modelAndView;
+    }
+    @PostMapping("/edit/{id}")
+    public ModelAndView updateRoom(@PathVariable("id") UUID roomId, @ModelAttribute RoomsDTO roomsDTO) {
         roomsDTO.setRoomId(roomId);
         RoomsDTO updatedRoomsDTO = roomsServices.updateRooms(roomsDTO);
-        if (updatedRoomsDTO != null) {
-            return new ResponseEntity<>("Room with the id = " + roomId + " was successfully updated!", HttpStatus.OK);
-        } else {
-            LOGGER.error("Room with id {} not found.", roomId);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/rooms/all");
+        return modelAndView;
     }
 
     /**
@@ -105,9 +103,11 @@ public class RoomsController {
      * @param roomId The UUID of the room to be deleted.
      * @return ResponseEntity with a success message and HttpStatus OK, or NOT_FOUND if the room is not found.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteRoom(@PathVariable("id") UUID roomId) {
+    @PostMapping("/delete/{id}")
+    public ModelAndView deleteRoom(@PathVariable("id") UUID roomId) {
         roomsServices.deleteRooms(roomId);
-        return new ResponseEntity<>("Room successfully deleted!", HttpStatus.OK);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/rooms/all");
+        return modelAndView;
     }
 }

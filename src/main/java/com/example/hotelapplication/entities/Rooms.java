@@ -32,7 +32,7 @@ public class Rooms {
     private String roomDescription;
     @Column(name = "roomCost", nullable = false)
     private int roomCost;
-    @ManyToMany(mappedBy = "rooms", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "rooms", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Reservation> reservations;
 
 

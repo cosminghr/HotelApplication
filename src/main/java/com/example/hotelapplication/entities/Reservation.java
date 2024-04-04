@@ -31,7 +31,7 @@ public class Reservation {
     @JoinColumn(name = "personId", referencedColumnName = "id")
     private Person person;
 
-    @ManyToMany( fetch = FetchType.EAGER)
+    @ManyToMany( cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(name = "reservations_rooms",
             joinColumns =  @JoinColumn(name = "reservationId"),
             inverseJoinColumns = @JoinColumn(name = "roomId"))
