@@ -1,5 +1,6 @@
 package com.example.hotelapplication.dtos;
 
+import com.example.hotelapplication.entities.RoomType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.*;
@@ -18,11 +19,10 @@ public class RoomsDTO {
 
     private int roomNumber;
 
-    private String roomType;
+    private RoomType roomType;
 
     private int roomCapacity;
 
-    private String roomStatus;
 
     private double roomRate;
 

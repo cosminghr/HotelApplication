@@ -99,7 +99,6 @@ public class RoomsServices {
             existingRoom.setRoomCost(roomsDTO.getRoomCost());
             existingRoom.setRoomType(roomsDTO.getRoomType());
             existingRoom.setRoomRate(roomsDTO.getRoomRate());
-            existingRoom.setRoomStatus(roomsDTO.getRoomStatus());
 
             Rooms updatedRoom = roomsRepository.save(existingRoom);
             LOGGER.info("Room with id {} was updated in db.", existingRoom.getRoomId());

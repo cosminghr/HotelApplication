@@ -137,7 +137,6 @@ public class PersonServices {
                 for (Rooms room : rooms) {
                     // Remove the association with the reservation
                     room.setReservations(null);
-                    room.setRoomStatus("free");
                     roomsRepository.save(room);
                 }
                 // Delete the reservation

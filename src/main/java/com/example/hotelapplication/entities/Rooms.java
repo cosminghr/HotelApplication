@@ -23,11 +23,9 @@ public class Rooms {
     @Column(name = "roomNumber", nullable = false, unique = true)
     private int roomNumber;
     @Column(name = "roomType", nullable = false)
-    private String roomType;
+    private RoomType roomType;
     @Column(name = "roomCapacity", nullable = false)
     private int roomCapacity;
-    @Column(name = "roomStatus", nullable = false)
-    private String roomStatus;
     @Column(name = "roomRate", nullable = false)
     private double roomRate;
     @Column(name = "roomDescription", nullable = false)

@@ -215,7 +215,6 @@ public class ReservationServices {
             List<Rooms> rooms = reservation.getRooms();
             for (Rooms room : rooms) {
                 room.getReservations().remove(reservation);
-                room.setRoomStatus("free");
                 roomsRepository.save(room);
             }
             reservationRepository.deleteById(id);
@@ -267,23 +266,6 @@ public class ReservationServices {
         return !reservationStartDate.isBefore(localDate) && !reservationEndDate.isBefore(reservationStartDate);
     }
 
-    /**
-     * Checks if the details of the provided room match the details of the actual room.
-     *
-     * @param room   The actual room entity.
-     * @param roomDTO The RoomDTO object containing room details.
-     * @return True if the details match, false otherwise.
-     */
-    private boolean roomMatches(Rooms room, RoomsDTO roomDTO) {
-        return room.getRoomId().equals(roomDTO.getRoomId()) &&
-                room.getRoomStatus().equals(roomDTO.getRoomStatus()) &&
-                room.getRoomCapacity() == roomDTO.getRoomCapacity() &&
-                room.getRoomNumber() == roomDTO.getRoomNumber() &&
-                room.getRoomDescription().equals(roomDTO.getRoomDescription()) &&
-                room.getRoomCost() == roomDTO.getRoomCost() &&
-                room.getRoomRate() == roomDTO.getRoomRate() &&
-                room.getRoomType().equals(roomDTO.getRoomType());
-    }
 
     public boolean isRoomAvailableForPeriodWithoutCurrentReservation(UUID roomId, LocalDate newReservationStart, LocalDate newReservationEnd, UUID currentReservationId) {
         // Retrieve the room by its ID
