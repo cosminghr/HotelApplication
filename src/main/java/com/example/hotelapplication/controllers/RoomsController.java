@@ -3,7 +3,9 @@ package com.example.hotelapplication.controllers;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
+import com.example.hotelapplication.dtos.ServicesDTO;
 import com.example.hotelapplication.services.RoomsServices;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,12 +46,9 @@ public class RoomsController {
     @GetMapping("/all")
     public ModelAndView getRooms() {
         List<RoomsDTO> rooms = roomsServices.findRooms();
+        System.out.println(rooms.toString());
         ModelAndView modelAndView = new ModelAndView("rooms");
         modelAndView.addObject("rooms", rooms);
-        for(RoomsDTO roomsDTO:rooms){
-            List<ReservationDTO> reservationDTOS = roomsDTO.getReservationDTOS();
-            modelAndView.addObject("reservation", reservationDTOS);
-        }
         return modelAndView;
     }
 
@@ -71,11 +71,20 @@ public class RoomsController {
 
     @GetMapping("/createRooms")
     public ModelAndView create(){
-        return new ModelAndView("createRooms");
+        List<ServicesDTO> services = roomsServices.findAllServices();
+        ModelAndView modelAndView = new ModelAndView("createRooms");
+        modelAndView.addObject("services", services);
+        return modelAndView;
     }
     @PostMapping("/create")
-    public ModelAndView insertRoom(@ModelAttribute RoomsDTO roomsDTO) {
-        UUID roomId = roomsServices.insertRooms(roomsDTO);
+    public ModelAndView insertRoom(@ModelAttribute RoomsDTO roomsDTO, @RequestParam("servicesIds") List<UUID> idServices) {
+        List<ServicesDTO> servicesDTOS = new ArrayList<>();
+        for(UUID serviceId : idServices){
+            ServicesDTO servicesDTO = roomsServices.findServiceByIdInRoom(serviceId);
+            servicesDTOS.add(servicesDTO);
+        }
+        roomsDTO.setServices(servicesDTOS);
+        roomsServices.insertRooms(roomsDTO);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/rooms/all");
         return modelAndView;
@@ -84,13 +93,23 @@ public class RoomsController {
     @GetMapping("/edit/{id}")
     public ModelAndView edit(@PathVariable("id") UUID id){
         RoomsDTO room = roomsServices.findRoomById(id);
+        List<ServicesDTO> services = room.getServices();
+        List<ServicesDTO> allServices = roomsServices.findAllServices();
         ModelAndView modelAndView = new ModelAndView("editRooms");
         modelAndView.addObject("room", room);
+        modelAndView.addObject("services", services);
+        modelAndView.addObject("allServices", allServices);
         return modelAndView;
     }
     @PostMapping("/edit/{id}")
-    public ModelAndView updateRoom(@PathVariable("id") UUID roomId, @ModelAttribute RoomsDTO roomsDTO) {
+    public ModelAndView updateRoom(@PathVariable("id") UUID roomId, @ModelAttribute RoomsDTO roomsDTO, @RequestParam("servicesIds") List<UUID> idServices) {
         roomsDTO.setRoomId(roomId);
+        List<ServicesDTO> servicesDTOS = new ArrayList<>();
+        for(UUID serviceId: idServices){
+            ServicesDTO servicesDTO = roomsServices.findServiceByIdInRoom(serviceId);
+            servicesDTOS.add(servicesDTO);
+        }
+        roomsDTO.setServices(servicesDTOS);
         RoomsDTO updatedRoomsDTO = roomsServices.updateRooms(roomsDTO);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/rooms/all");

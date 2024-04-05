@@ -1,18 +1,21 @@
 package com.example.hotelapplication.services;
 
-import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
+import com.example.hotelapplication.dtos.ServicesDTO;
 import com.example.hotelapplication.dtos.builders.RoomsBuilder;
+import com.example.hotelapplication.dtos.builders.ServicesBuilder;
 import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
+import com.example.hotelapplication.entities.Services;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
-import jakarta.transaction.TransactionScoped;
+import com.example.hotelapplication.repositories.ServicesRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +28,7 @@ import java.util.stream.Collectors;
 public class RoomsServices {
     private final RoomsRepository roomsRepository;
     private final ReservationRepository reservationRepository;
+    private final ServicesRepository servicesRepository;
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomsServices.class);
 
     /**
@@ -32,10 +36,12 @@ public class RoomsServices {
      *
      * @param roomsRepository       The repository for Rooms entities.
      * @param reservationRepository The repository for Reservation entities.
+     * @param servicesRepository
      */
-    public RoomsServices(RoomsRepository roomsRepository, ReservationRepository reservationRepository) {
+    public RoomsServices(RoomsRepository roomsRepository, ReservationRepository reservationRepository, ServicesRepository servicesRepository) {
         this.roomsRepository = roomsRepository;
         this.reservationRepository = reservationRepository;
+        this.servicesRepository = servicesRepository;
     }
 
     /**
@@ -67,6 +73,24 @@ public class RoomsServices {
         }
     }
 
+    public List<ServicesDTO> findAllServices() {
+        List<Services> services = servicesRepository.findAll();
+        return services.stream()
+                .map(ServicesBuilder::etoservicesDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ServicesDTO findServiceByIdInRoom(UUID id) {
+        Optional<Services> optionalServices = servicesRepository.findById(id);
+        if (optionalServices.isPresent()) {
+            LOGGER.info("Service with id {} was found in db", id);
+            return ServicesBuilder.etoservicesDTO(optionalServices.get());
+        } else {
+            LOGGER.error("Service with id {} was not found in db", id);
+            return null;
+        }
+    }
+
     /**
      * Inserts a new room into the database.
      *
@@ -74,15 +98,31 @@ public class RoomsServices {
      * @return The generated UUID for the newly inserted room, or null if insertion fails.
      */
     public UUID insertRooms(RoomsDTO roomsDTO) {
-        Rooms rooms = RoomsBuilder.stoEntity(roomsDTO);
-        rooms = roomsRepository.save(rooms);
-        if (rooms != null) {
-            LOGGER.info("Room with id {} was inserted in db", rooms.getRoomId());
-            return rooms.getRoomId();
-        } else {
-            LOGGER.error("Failed to insert room into the database");
+        List<ServicesDTO> servicesDTOS = roomsDTO.getServices();
+        if(servicesDTOS.isEmpty()){
             return null;
         }
+
+        List<ServicesDTO> servicesForRes = new ArrayList<>();
+        for(ServicesDTO servicesDTO: servicesDTOS){
+            Optional<Services> servicesOptional = servicesRepository.findById(servicesDTO.getServiceId());
+            if(servicesOptional.isEmpty()){
+                return null;
+            }
+            if(servicesDTO.getRooms() == null){
+                servicesDTO.setRooms(new ArrayList<>());
+            }
+            servicesForRes.add(servicesDTO);
+            servicesForRes.get(0).getRooms().add(roomsDTO);
+        }
+
+        roomsDTO.setServices(servicesDTOS);
+
+        Rooms rooms = RoomsBuilder.stoEntity(roomsDTO);
+        rooms = roomsRepository.save(rooms);
+
+        return rooms.getRoomId();
+
     }
 
     /**
@@ -92,6 +132,7 @@ public class RoomsServices {
      * @return The updated RoomsDTO object if update is successful, otherwise null.
      */
     public RoomsDTO updateRooms(RoomsDTO roomsDTO) {
+        System.out.println(roomsDTO.toString());
         Optional<Rooms> optionalRooms = roomsRepository.findById(roomsDTO.getRoomId());
         if (optionalRooms.isPresent()) {
             Rooms existingRoom = optionalRooms.get();
@@ -102,6 +143,17 @@ public class RoomsServices {
             existingRoom.setRoomType(roomsDTO.getRoomType());
             existingRoom.setRoomRate(roomsDTO.getRoomRate());
 
+            // Update the list of services
+            List<Services> updatedServices = new ArrayList<>();
+            for (ServicesDTO servicesDTO : roomsDTO.getServices()) {
+                Optional<Services> optionalService = servicesRepository.findById(servicesDTO.getServiceId());
+                if (optionalService.isPresent()) {
+                    updatedServices.add(optionalService.get());
+                }
+            }
+
+            existingRoom.setServices(updatedServices);
+
             Rooms updatedRoom = roomsRepository.save(existingRoom);
             LOGGER.info("Room with id {} was updated in db.", existingRoom.getRoomId());
             return RoomsBuilder.etoRoomsDTO(updatedRoom);
@@ -110,6 +162,8 @@ public class RoomsServices {
             return null;
         }
     }
+
+
 
     /**
      * Deletes a room from the database based on the provided UUID.

@@ -1,13 +1,18 @@
 package com.example.hotelapplication.services;
 
+import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.ServicesDTO;
+import com.example.hotelapplication.dtos.builders.RoomsBuilder;
 import com.example.hotelapplication.dtos.builders.ServicesBuilder;
+import com.example.hotelapplication.entities.Rooms;
 import com.example.hotelapplication.entities.Services;
+import com.example.hotelapplication.repositories.RoomsRepository;
 import com.example.hotelapplication.repositories.ServicesRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +25,7 @@ import java.util.stream.Collectors;
 public class ServicesServices {
 
     private final ServicesRepository servicesRepository;
+    private final RoomsRepository roomsRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServicesServices.class);
 
@@ -27,9 +33,11 @@ public class ServicesServices {
      * Constructor for ServicesServices.
      *
      * @param servicesRepository The repository for Services entities.
+     * @param roomsRepository
      */
-    public ServicesServices(ServicesRepository servicesRepository) {
+    public ServicesServices(ServicesRepository servicesRepository, RoomsRepository roomsRepository) {
         this.servicesRepository = servicesRepository;
+        this.roomsRepository = roomsRepository;
     }
 
     /**
@@ -37,6 +45,13 @@ public class ServicesServices {
      *
      * @return List of ServicesDTO objects.
      */
+    public List<RoomsDTO> findAllRooms() {
+        List<Rooms> rooms = roomsRepository.findAll();
+        return rooms.stream()
+                .map(RoomsBuilder::etoRoomsDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<ServicesDTO> findAllServices() {
         List<Services> servicesList = servicesRepository.findAll();
         return servicesList.stream()
@@ -51,7 +66,7 @@ public class ServicesServices {
      * @return The generated UUID for the newly inserted service.
      */
     public UUID insertService(ServicesDTO servicesDTO) {
-        Services services = ServicesBuilder.stoEnitity(servicesDTO);
+        Services services = ServicesBuilder.stoEntity(servicesDTO);
         services = servicesRepository.save(services);
         LOGGER.debug("Service with id {} was inserted in db", services.getServiceId());
         return services.getServiceId();
@@ -86,10 +101,6 @@ public class ServicesServices {
             Services existingServices = optionalServices.get();
             existingServices.setServiceName(servicesDTO.getServiceName());
             existingServices.setServiceDescription(servicesDTO.getServiceDescription());
-            existingServices.setServiceStatus(servicesDTO.getServiceStatus());
-            existingServices.setServiceType(servicesDTO.getServiceType());
-            existingServices.setServiceCost(servicesDTO.getServiceCost());
-
             Services updatedServices = servicesRepository.save(existingServices);
             LOGGER.debug("Service with id {} was updated in db.", existingServices.getServiceId());
             return ServicesBuilder.etoservicesDTO(updatedServices);
@@ -107,10 +118,31 @@ public class ServicesServices {
     public void deleteService(UUID id) {
         Optional<Services> optionalServices = servicesRepository.findById(id);
         if (optionalServices.isPresent()) {
+            Services serviceToDelete = optionalServices.get();
+
+            // Iterate over rooms to remove the service from each room
+            List<Rooms> rooms = roomsRepository.findAll();
+            for (Rooms room : rooms) {
+                List<Services> services = room.getServices();
+                Iterator<Services> iterator = services.iterator();
+                while (iterator.hasNext()) {
+                    Services roomService = iterator.next();
+                    if (roomService.getServiceId().equals(id)) {
+                        System.out.println("Found service in room: " + roomService.getServiceId());
+                        iterator.remove(); // Remove the service from the room
+                    }
+                }
+                room.setServices(services);
+                roomsRepository.save(room);// Update the room with the modified services list
+                System.out.println(services.toString());
+            }
+
+            // Now delete the service itself
             servicesRepository.deleteById(id);
-            LOGGER.info("Services with id {} deleted successfully.", id);
+            LOGGER.info("Service with id {} deleted successfully.", id);
         } else {
-            LOGGER.info("Services with id {} not found. Delete operation aborted.", id);
+            LOGGER.info("Service with id {} not found. Delete operation aborted.", id);
         }
     }
+
 }

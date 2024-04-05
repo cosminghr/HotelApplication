@@ -1,7 +1,9 @@
 package com.example.hotelapplication.controllers;
 
+import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.ServicesDTO;
+import com.example.hotelapplication.repositories.RoomsRepository;
 import com.example.hotelapplication.services.ServicesServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +16,11 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
+
 /**
  * Controller class for handling Services-related operations.
  */
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:8080")
 @RequestMapping(value = "/services")
 public class ServicesController {
 
@@ -35,6 +37,7 @@ public class ServicesController {
         this.servicesServices = servicesServices;
     }
 
+
     /**
      * Retrieves a list of ServicesDTO objects representing all services.
      *
@@ -43,12 +46,8 @@ public class ServicesController {
     @GetMapping(value = "/all")
     public ModelAndView getServices() {
         List<ServicesDTO> services = servicesServices.findAllServices();
-        ModelAndView modelAndView = new ModelAndView();
+        ModelAndView modelAndView = new ModelAndView("services");
         modelAndView.addObject("services", services);
-        for(ServicesDTO servicesDTO: services){
-            List<RoomsDTO> roomsDTOS = servicesDTO.getRoomsDTOS();
-            modelAndView.addObject("rooms", roomsDTOS);
-        }
         return modelAndView;
     }
 
@@ -68,34 +67,34 @@ public class ServicesController {
         }
     }
 
-    /**
-     * Inserts a new service into the database.
-     *
-     * @param servicesDTO The ServicesDTO object to be inserted.
-     * @return ResponseEntity containing the generated UUID for the newly inserted service and HttpStatus CREATED.
-     */
-    @PostMapping()
-    public ResponseEntity<UUID> insertService(@Valid @RequestBody ServicesDTO servicesDTO) {
+
+    @GetMapping("/createServices")
+    public ModelAndView create(){
+        ModelAndView modelAndView = new ModelAndView("createServices");
+        return modelAndView;
+    }
+    @PostMapping("/create")
+    public ModelAndView insertService(@ModelAttribute ServicesDTO servicesDTO) {
         UUID serviceID = servicesServices.insertService(servicesDTO);
-        return new ResponseEntity<>(serviceID, HttpStatus.CREATED);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/services/all");
+        return modelAndView;
     }
 
-    /**
-     * Updates an existing service in the database.
-     *
-     * @param id           The UUID of the service to be updated.
-     * @param servicesDTO  The updated ServicesDTO object.
-     * @return ResponseEntity with a success message and HttpStatus OK, or HttpStatus.NOT_FOUND if the service is not found.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateService(@PathVariable("id") UUID id, @Valid @RequestBody ServicesDTO servicesDTO) {
+    @GetMapping("/edit/{id}")
+    public ModelAndView edit(@PathVariable("id") UUID id){
+        ServicesDTO servicesDTO = servicesServices.findServiceById(id);
+        ModelAndView modelAndView = new ModelAndView("editServices");
+        modelAndView.addObject("service", servicesDTO);
+        return modelAndView;
+    }
+
+    @PostMapping("/edit/{id}")
+    public ModelAndView updateService(@PathVariable("id") UUID id, @ModelAttribute ServicesDTO servicesDTO) {
         servicesDTO.setServiceId(id);
         ServicesDTO updatedServiceDTO = servicesServices.updateService(servicesDTO);
-        if (updatedServiceDTO != null) {
-            return new ResponseEntity<>("Service with the id = " + servicesDTO.getServiceId() + " was successfully updated!", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("Service not found", HttpStatus.NOT_FOUND);
-        }
+        ModelAndView modelAndView = new ModelAndView("redirect:/services/all");
+        return modelAndView;
     }
 
     /**
@@ -104,9 +103,11 @@ public class ServicesController {
      * @param id The UUID of the service to be deleted.
      * @return ResponseEntity with a success message and HttpStatus OK, or HttpStatus.NOT_FOUND if the service is not found.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteService(@PathVariable("id") UUID id) {
+    @PostMapping("/delete/{id}")
+    public ModelAndView deleteService(@PathVariable("id") UUID id) {
         servicesServices.deleteService(id);
-        return new ResponseEntity<>("Service successfully deleted!", HttpStatus.OK);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/services/all");
+        return modelAndView;
     }
 }

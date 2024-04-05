@@ -12,6 +12,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 @Entity
 @Setter
@@ -26,16 +27,10 @@ public class Services {
     private UUID serviceId;
     @Column(name = "serviceName", nullable = false)
     private String serviceName;
-    @Column(name = "serviceType", nullable = false)
-    private ServiceType serviceType;
-    @Column(name = "serviceStatus", nullable = false)
-    private ServiceStatus serviceStatus;
     @Column(name = "serviceDescription", nullable = false)
     private String serviceDescription;
-    @Column(name = "serviceCost", nullable = false)
-    private double serviceCost;
 
-    @ManyToMany(mappedBy = "services", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "services", cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     private List<Rooms> rooms;
 
 

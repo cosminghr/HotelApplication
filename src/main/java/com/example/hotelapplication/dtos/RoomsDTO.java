@@ -29,6 +29,6 @@ public class RoomsDTO {
 
     private List<ReservationDTO> reservationDTOS;
 
-    private List<ServicesDTO> servicesDTOS;
+    private List<ServicesDTO> services;
 
 }

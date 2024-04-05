@@ -22,7 +22,6 @@ import java.util.UUID;
  * Controller class for handling Reservation-related operations.
  */
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:3000")
 @RequestMapping(value = "/reservations")
 public class ReservationController {
     private final ReservationServices reservationServices;
@@ -128,7 +127,6 @@ public class ReservationController {
             roomsDTOs.add(roomsDTO);
         }
         reservationDTO.setRooms(roomsDTOs);
-        System.out.println(reservationDTO.toString());
         ReservationDTO updatedReservationDTO = reservationServices.updateReservations(reservationDTO);
         ModelAndView modelAndView = new ModelAndView();
         if (updatedReservationDTO != null) {

@@ -12,7 +12,6 @@
         <h1 class="text-center my-4">Edit Room</h1>
 
         <div class="mb-3">
-            <!-- No need for Room ID field as it's edited, not created -->
             <label for="roomNumber" class="form-label">Room Number</label>
             <input type="text" class="form-control" id="roomNumber" name="roomNumber" th:value="${room.roomNumber}" required>
             <div class="invalid-feedback">Room number is required</div>
@@ -24,7 +23,7 @@
             <select class="form-select" id="roomType" name="roomType" required onchange="fillRoomDetails()">
                 <option th:value="${room.roomType}" selected disabled></option>
                 <!-- Iterate over the RoomType enum values to populate the dropdown -->
-                <option th:each="type : ${T(com.example.hotelapplication.entities.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
+                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
             </select>
             <div class="invalid-feedback">Room type is required</div>
         </div>
@@ -52,6 +51,21 @@
             <input type="number" class="form-control" id="roomCost" name="roomCost" th:value="${room.roomCost}" required>
             <div class="invalid-feedback">Room cost is required</div>
         </div>
+
+        <div class="mb-3">
+            <label class="form-label">Select Services for the Room</label>
+            <div class="form-check">
+                <!-- Iterate over the list of all services to display checkboxes -->
+                <div th:each="service : ${allServices}">
+                    <input class="form-check-input" type="checkbox" id="service-${service.serviceId}" name="servicesIds"
+                           th:value="${service.serviceId}"
+                           th:checked="${room.services.contains(service)}">
+                    <label class="form-check-label" th:for="'service-' + ${service.serviceId}" th:text="${service.serviceName}"></label>
+                </div>
+            </div>
+        </div>
+
+
 
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>

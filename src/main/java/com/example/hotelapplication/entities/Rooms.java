@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 @Entity
 @Setter
@@ -33,7 +34,7 @@ public class Rooms {
     @ManyToMany(mappedBy = "rooms", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Reservation> reservations;
 
-    @ManyToMany(cascade = CascadeType.MERGE, fetch =  FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.DETACH, fetch =  FetchType.EAGER)
     @JoinTable(name = "rooms_services",
                joinColumns = @JoinColumn(name = "roomId"),
                inverseJoinColumns = @JoinColumn(name = "serviceId"))

@@ -9,6 +9,4 @@ import java.util.UUID;
 
 public interface RoomsRepository extends JpaRepository<Rooms, UUID> {
 
-    @EntityGraph(attributePaths = "reservations")
-    Optional<Rooms> findById(UUID id);
 }

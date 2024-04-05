@@ -29,10 +29,10 @@
       <th>Room Number</th>
       <th>Room Type</th>
       <th>Capacity</th>
-      <th>Status</th>
       <th>Rate</th>
       <th>Description</th>
       <th>Cost</th>
+      <th>Services</th> <!-- New column for Services -->
       <th>Action</th>
     </tr>
     </thead>
@@ -45,6 +45,12 @@
       <td th:text="${room.roomRate}"></td>
       <td th:text="${room.roomDescription}"></td>
       <td th:text="${room.roomCost}"></td>
+      <td>
+        <!-- Iterate over the list of services for the room -->
+        <ul>
+          <li th:each="service : ${room.services}" th:text="${service.serviceName}"></li>
+        </ul>
+      </td>
       <!-- Add your action buttons or links here -->
       <td>
         <form th:action="@{'/rooms/delete/' + ${room.roomId}}" method="post">

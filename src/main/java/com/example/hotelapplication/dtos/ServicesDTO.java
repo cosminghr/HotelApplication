@@ -20,10 +20,6 @@ public class ServicesDTO {
 
     private UUID serviceId;
     private String serviceName;
-    private int roomId;
-    private ServiceType serviceType;
-    private ServiceStatus serviceStatus;
     private String serviceDescription;
-    private double serviceCost;
-    private List<RoomsDTO> roomsDTOS;
+    private List<RoomsDTO> rooms;
 }

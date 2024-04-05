@@ -14,7 +14,7 @@ public class ServicesBuilder {
         return modelMapper.map(service, ServicesDTO.class);
     }
 
-    public static Services stoEnitity(ServicesDTO servicesDTO){
+    public static Services stoEntity(ServicesDTO servicesDTO){
         return modelMapper.map(servicesDTO, Services.class);
     }
 }
