@@ -23,7 +23,7 @@
             <select class="form-select" id="roomType" name="roomType" required onchange="fillRoomDetails()">
                 <option value="" selected disabled>Select Room Type</option>
                 <!-- Iterate over the RoomType enum values to populate the dropdown -->
-                <option th:each="type : ${T(com.example.hotelapplication.entities.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
+                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
             </select>
             <div class="invalid-feedback">Room type is required</div>
         </div>

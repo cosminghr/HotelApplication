@@ -20,7 +20,7 @@ import java.util.UUID;
  * Controller class for handling Rooms-related operations.
  */
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:3000")
+@CrossOrigin(originPatterns = "http://localhost:8080")
 @RequestMapping(value = "/rooms")
 public class RoomsController {
     private final RoomsServices roomsServices;

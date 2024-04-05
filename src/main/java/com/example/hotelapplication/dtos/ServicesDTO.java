@@ -1,5 +1,7 @@
 package com.example.hotelapplication.dtos;
 
+import com.example.hotelapplication.enums.ServiceStatus;
+import com.example.hotelapplication.enums.ServiceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
@@ -7,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Setter
@@ -18,8 +21,9 @@ public class ServicesDTO {
     private UUID serviceId;
     private String serviceName;
     private int roomId;
-    private String serviceType;
-    private String serviceStatus;
+    private ServiceType serviceType;
+    private ServiceStatus serviceStatus;
     private String serviceDescription;
     private double serviceCost;
+    private List<RoomsDTO> roomsDTOS;
 }

@@ -1,8 +1,6 @@
 package com.example.hotelapplication.dtos;
 
-import com.example.hotelapplication.entities.RoomType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
+import com.example.hotelapplication.enums.RoomType;
 import lombok.*;
 
 import java.util.List;
@@ -23,7 +21,6 @@ public class RoomsDTO {
 
     private int roomCapacity;
 
-
     private double roomRate;
 
     private String roomDescription;
@@ -31,5 +28,7 @@ public class RoomsDTO {
     private int roomCost;
 
     private List<ReservationDTO> reservationDTOS;
+
+    private List<ServicesDTO> servicesDTOS;
 
 }

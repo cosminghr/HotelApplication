@@ -1,5 +1,7 @@
 package com.example.hotelapplication.entities;
 
+import com.example.hotelapplication.enums.ServiceStatus;
+import com.example.hotelapplication.enums.ServiceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 @Entity
 @Setter
@@ -23,16 +26,17 @@ public class Services {
     private UUID serviceId;
     @Column(name = "serviceName", nullable = false)
     private String serviceName;
-    @Column(name = "roomId", nullable = false)
-    private int roomId;
     @Column(name = "serviceType", nullable = false)
-    private String serviceType;
+    private ServiceType serviceType;
     @Column(name = "serviceStatus", nullable = false)
-    private String serviceStatus;
+    private ServiceStatus serviceStatus;
     @Column(name = "serviceDescription", nullable = false)
     private String serviceDescription;
     @Column(name = "serviceCost", nullable = false)
     private double serviceCost;
+
+    @ManyToMany(mappedBy = "services", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private List<Rooms> rooms;
 
 
 }

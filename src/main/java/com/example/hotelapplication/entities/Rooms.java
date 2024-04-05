@@ -1,13 +1,11 @@
 package com.example.hotelapplication.entities;
 
+import com.example.hotelapplication.enums.RoomType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 @Entity
 @Setter
@@ -34,6 +32,14 @@ public class Rooms {
     private int roomCost;
     @ManyToMany(mappedBy = "rooms", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Reservation> reservations;
+
+    @ManyToMany(cascade = CascadeType.MERGE, fetch =  FetchType.EAGER)
+    @JoinTable(name = "rooms_services",
+               joinColumns = @JoinColumn(name = "roomId"),
+               inverseJoinColumns = @JoinColumn(name = "serviceId"))
+    private List<Services> services;
+
+
 
 
 }

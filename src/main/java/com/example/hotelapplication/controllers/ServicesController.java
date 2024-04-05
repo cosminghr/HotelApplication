@@ -1,5 +1,6 @@
 package com.example.hotelapplication.controllers;
 
+import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.ServicesDTO;
 import com.example.hotelapplication.services.ServicesServices;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.UUID;
  * Controller class for handling Services-related operations.
  */
 @RestController
-@CrossOrigin(originPatterns = "http://localhost:3000")
+@CrossOrigin(originPatterns = "http://localhost:8080")
 @RequestMapping(value = "/services")
 public class ServicesController {
 
@@ -38,10 +40,16 @@ public class ServicesController {
      *
      * @return ResponseEntity containing the list of ServicesDTOs and HttpStatus OK.
      */
-    @GetMapping()
-    public ResponseEntity<List<ServicesDTO>> getServices() {
-        List<ServicesDTO> dtos = servicesServices.findAllServices();
-        return new ResponseEntity<>(dtos, HttpStatus.OK);
+    @GetMapping(value = "/all")
+    public ModelAndView getServices() {
+        List<ServicesDTO> services = servicesServices.findAllServices();
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("services", services);
+        for(ServicesDTO servicesDTO: services){
+            List<RoomsDTO> roomsDTOS = servicesDTO.getRoomsDTOS();
+            modelAndView.addObject("rooms", roomsDTOS);
+        }
+        return modelAndView;
     }
 
     /**

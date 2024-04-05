@@ -1,4 +1,4 @@
-package com.example.hotelapplication.entities;
+package com.example.hotelapplication.enums;
 
 public enum RoomType {
     KING,

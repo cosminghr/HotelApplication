@@ -1,12 +1,12 @@
 package com.example.hotelapplication.entities;
 
+import com.example.hotelapplication.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import org.hibernate.annotations.GenericGenerator;
 
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;

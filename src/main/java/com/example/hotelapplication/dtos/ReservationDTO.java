@@ -13,7 +13,6 @@ import java.util.*;
 @Data
 public class ReservationDTO {
     private UUID reservationId;
-    //private PersonDTO personDTO;
     private PersonDTO person;
     private List<RoomsDTO> rooms;
     private LocalDate reservationStart;
