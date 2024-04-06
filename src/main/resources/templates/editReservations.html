@@ -14,28 +14,42 @@
 
     <div class="mb-3">
       <label for="reservationStart" class="form-label">Start Date</label>
-      <input type="date" class="form-control" id="reservationStart" name="reservationStart" th:value="${reservation.reservationStart}" required>
+      <input type="text" class="form-control" id="reservationStart" name="reservationStart" th:value="${reservation.reservationStart}" required>
       <div class="invalid-feedback">Start Date is required</div>
     </div>
     <div class="mb-3">
       <label for="reservationEnd" class="form-label">End Date</label>
-      <input type="date" class="form-control" id="reservationEnd" name="reservationEnd" th:value="${reservation.reservationEnd}" required>
+      <input type="text" class="form-control" id="reservationEnd" name="reservationEnd" th:value="${reservation.reservationEnd}" required>
       <div class="invalid-feedback">End Date is required</div>
     </div>
 
     <div class="mb-3">
-      <label for="roomIds" class="form-label">Room Numbers</label>
-      <!-- Dropdown menu for selecting room numbers -->
-      <select id="roomIds" name="roomIds" multiple="multiple" class="form-select" required>
-        <option value="" selected disabled>Select Room Id</option>
-        <!-- Populate the dropdown with room IDs from reservations -->
-        <option th:each="room : ${reservation.rooms}" th:value="${room.roomId}" th:text="${room.roomId}" class="remove-room"></option>
-      </select>
+      <label class="form-label">Room Numbers</label>
+      <!-- Iterate over each room in the reservation -->
+      <div th:each="room : ${reservation.rooms}">
+        <!-- Generate a checkbox for each room -->
+        <div class="form-check">
+          <!-- Check if the room ID is present in the list of selected room IDs -->
+          <input class="form-check-input" type="checkbox" th:id="'roomCheckbox_' + ${room.roomId}" th:value="${room.roomId}" name="roomIds"
+                 th:checked="${#lists.contains(room.roomId, room.roomId)}">
+          <label class="form-check-label" th:for="'roomCheckbox_' + ${room.roomId}" th:text="${'Room ' + room.roomNumber}"></label>
+        </div>
+      </div>
       <div class="invalid-feedback">At least one room must be selected</div>
     </div>
 
-    <!-- Button to remove selected room ID -->
-    <button type="button" class="btn btn-danger" id="removeRoomId">Remove Selected Room</button>
+    <!-- Display all rooms as checkboxes -->
+<!--    <div class="mb-3">
+      <label class="form-label">All Rooms</label>
+      <div th:each="room : ${allRooms}">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" th:id="'allRoomCheckbox_' + ${room.roomId}" th:value="${room.roomId}" name="allRoomIds"
+                 th:each="room1 : ${reservation.rooms}"
+                 th:checked="${#lists.contains(room1.roomId, room.roomId)}">
+          <label class="form-check-label" th:for="'allRoomCheckbox_' + ${room.roomId}" th:text="${'Room ' + room.roomNumber}"></label>
+        </div>
+      </div>
+    </div>-->
 
     <button type="submit" class="btn btn-primary">Confirm Edit</button>
   </form>
@@ -50,5 +64,26 @@
     selectElement.options[selectElement.selectedIndex].remove();
   });
 </script>
+<!-- Include jQuery and jQuery UI Datepicker -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+
+<script>
+  $(function() {
+    // Initialize datepicker for start and end dates
+    $("#reservationStart, #reservationEnd").datepicker({
+      dateFormat: 'yy-mm-dd', // Format the date as desired
+      minDate: 0, // Set the minimum selectable date to today
+      onSelect: function(selectedDate) {
+        var option = this.id == "reservationStart" ? "minDate" : "maxDate",
+                instance = $(this).data("datepicker"),
+                date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+        $("#reservationStart, #reservationEnd").not(this).datepicker("option", option, date);
+      }
+    });
+  });
+</script>
+
 </body>
 </html>

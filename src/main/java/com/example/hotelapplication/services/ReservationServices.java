@@ -196,12 +196,19 @@ public class ReservationServices {
         existingReservation.setReservationEnd(reservationDTO.getReservationEnd());
         existingReservation.setReservationCost(calculateTotalCost(reservationDTO));
 
+        // Set the updated list of rooms to the reservation
+        List<Rooms> rooms = reservationDTO.getRooms().stream()
+                .map(RoomsBuilder::stoEntity)
+                .collect(Collectors.toList());
+        existingReservation.setRooms(rooms);
+
         // Save the updated reservation in the database
         Reservation updatedReservation = reservationRepository.save(existingReservation);
 
         LOGGER.info("Reservation with id {} was updated in db", existingReservation.getReservationId());
         return ReservationBuilder.etoReservationDTO(updatedReservation);
     }
+
 
     /**
      * Deletes a reservation from the database based on the provided UUID.

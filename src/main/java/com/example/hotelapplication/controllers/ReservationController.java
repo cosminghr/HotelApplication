@@ -70,10 +70,12 @@ public class ReservationController {
         ReservationDTO reservation = reservationServices.findReservationsById(id);
         PersonDTO person = reservation.getPerson();
         List<RoomsDTO> rooms = reservation.getRooms();
+        List<RoomsDTO> allRooms = reservationServices.findAllRooms();
         ModelAndView modelAndView = new ModelAndView("editReservations");
         modelAndView.addObject("reservation", reservation);
         modelAndView.addObject("rooms", rooms);
         modelAndView.addObject("person", person);
+        modelAndView.addObject("allRooms", allRooms);
         return modelAndView;
     }
 
@@ -118,11 +120,11 @@ public class ReservationController {
      * @return ResponseEntity with a success message and HttpStatus OK if update is successful,
      * or HttpStatus.NOT_FOUND if the reservation is not found.
      */
-    @PostMapping("edit/{id}")
-    public ModelAndView updateReservation(@PathVariable("id") UUID id,@ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms) {
+    @PostMapping("/edit/{id}")
+    public ModelAndView updateReservation(@PathVariable("id") UUID id, @ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms) {
         reservationDTO.setReservationId(id);
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
-        for(UUID roomId : idRooms){
+        for (UUID roomId : idRooms) {
             RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
             roomsDTOs.add(roomsDTO);
         }
@@ -132,11 +134,12 @@ public class ReservationController {
         if (updatedReservationDTO != null) {
             modelAndView.addObject("message", "Reservation with the id = " + reservationDTO.getReservationId() + " was successfully updated.");
             modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
-        }else{
+        } else {
             modelAndView.setViewName("redirect:/reservations/all");
         }
         return modelAndView;
     }
+
 
 
     /**
@@ -153,4 +156,7 @@ public class ReservationController {
         modelAndView.setViewName("redirect:/reservations/all");
         return modelAndView;
     }
+
+
+
 }

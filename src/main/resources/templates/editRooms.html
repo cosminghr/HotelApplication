@@ -4,6 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Room</title>
+
+    <style>
+        /* Style for the white stars */
+        .rate {
+            float: left;
+            height: 46px;
+            padding: 0 10px;
+        }
+
+        .rate:not(:checked) > input {
+            position: absolute;
+            top: -9999px;
+        }
+
+        .rate:not(:checked) > label {
+            float: right;
+            width: 1em;
+            overflow: hidden;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 30px;
+            color: #ccc;
+        }
+
+        .rate:not(:checked) > label:before {
+            content: '★ ';
+        }
+
+        .rate > input:checked ~ label {
+            color: #ffc700;
+        }
+
+        .rate:not(:checked) > label:hover,
+        .rate:not(:checked) > label:hover ~ label {
+            color: #deb217;
+        }
+
+        .rate > input:checked + label:hover,
+        .rate > input:checked + label:hover ~ label,
+        .rate > input:checked ~ label:hover,
+        .rate > input:checked ~ label:hover ~ label,
+        .rate > label:hover ~ input:checked ~ label {
+            color: #c59b08;
+        }
+
+        /* Center the Room Rate label */
+        .room-rate-label {
+            display: inline-block;
+            text-align: left;
+            width: 100%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
@@ -21,11 +74,10 @@
             <label for="roomType" class="form-label">Room Type</label>
             <!-- Dropdown menu for selecting room type -->
             <select class="form-select" id="roomType" name="roomType" required onchange="fillRoomDetails()">
-                <option th:value="${room.roomType}" selected disabled></option>
                 <!-- Iterate over the RoomType enum values to populate the dropdown -->
-                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
+                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}"
+                        th:text="${type}" th:selected="${type == room.roomType}"></option>
             </select>
-            <div class="invalid-feedback">Room type is required</div>
         </div>
 
         <div class="mb-3">
@@ -35,13 +87,24 @@
         </div>
 
         <div class="mb-3">
-            <label for="roomRate" class="form-label">Room Rate</label>
-            <input type="number" step="0.01" class="form-control" id="roomRate" name="roomRate" th:value="${room.roomRate}" required>
-            <div class="invalid-feedback">Room rate is required</div>
+            <label class="room-rate-label">Room Rate</label>
+            <!-- Centered Room Rate label -->
+            <div class="rate">
+                <input type="radio" id="star5" name="roomRate" value="5" th:checked="${room.roomRate == 5}"/>
+                <label for="star5" title="text">5 stars</label>
+                <input type="radio" id="star4" name="roomRate" value="4" th:checked="${room.roomRate == 4}"/>
+                <label for="star4" title="text">4 stars</label>
+                <input type="radio" id="star3" name="roomRate" value="3" th:checked="${room.roomRate == 3}"/>
+                <label for="star3" title="text">3 stars</label>
+                <input type="radio" id="star2" name="roomRate" value="2" th:checked="${room.roomRate == 2}"/>
+                <label for="star2" title="text">2 stars</label>
+                <input type="radio" id="star1" name="roomRate" value="1" th:checked="${room.roomRate == 1}"/>
+                <label for="star1" title="text">1 star</label>
+            </div>
         </div>
 
         <div class="mb-3">
-            <label for="roomDescription" class="form-label">Room Description</label>
+            <label for="roomDescription" class="room-rate-label">Room Description</label>
             <textarea class="form-control" id="roomDescription" name="roomDescription" required th:text="${room.roomDescription}"></textarea>
             <div class="invalid-feedback">Room description is required</div>
         </div>
@@ -57,15 +120,12 @@
             <div class="form-check">
                 <!-- Iterate over the list of all services to display checkboxes -->
                 <div th:each="service : ${allServices}">
-                    <input class="form-check-input" type="checkbox" id="service-${service.serviceId}" name="servicesIds"
-                           th:value="${service.serviceId}"
-                           th:checked="${room.services.contains(service)}">
-                    <label class="form-check-label" th:for="'service-' + ${service.serviceId}" th:text="${service.serviceName}"></label>
+                    <input class="form-check-input" type="checkbox" th:id="'serviceCheckBox_' +${service.serviceId}" th:value="${service.serviceId}" name="servicesIds"
+                           th:checked="${#lists.contains(room.services.![serviceId], service.serviceId)}">
+                    <label class="form-check-label" th:for="'serviceCheckBox_' + ${service.serviceId}" th:text="${service.serviceName}"></label>
                 </div>
             </div>
         </div>
-
-
 
         <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
