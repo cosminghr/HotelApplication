@@ -120,3 +120,78 @@ body{
 .register-link p a:hover{
     text-decoration: underline;
 }
+
+.wrapper .login-link{
+    font-size: 14.5px;
+    text-align: center;
+    margin: 20px 0 15px;
+
+}
+
+.wrapper .input-box.datepicker {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 30px 0;
+}
+
+.input-box.datepicker input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    border: 2px solid black;
+    border-radius: 40px;
+    font-size: 16px;
+    color: black;
+    padding: 20px 45px 20px 20px;
+}
+
+.input-box.datepicker input::placeholder {
+    color: black;
+}
+
+.input-box.datepicker i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+/* Adjust the style of the datepicker calendar icon */
+.input-box.datepicker .bx-calendar {
+    font-size: 24px;
+}
+
+/* Adjust the style of the datepicker dropdown */
+.ui-datepicker {
+    background: transparent;
+    border: 1px solid black;
+    border-radius: 8px;
+}
+
+.ui-datepicker-header {
+    background: black;
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.ui-datepicker-calendar {
+    color: black;
+}
+
+.ui-datepicker-calendar td a {
+    color: black;
+}
+
+.ui-datepicker-calendar .ui-state-hover {
+    background: #333;
+}
+
+.ui-datepicker-calendar .ui-state-active {
+    background: black;
+    color: white;
+}

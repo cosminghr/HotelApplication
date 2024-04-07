@@ -1,5 +1,6 @@
 package com.example.hotelapplication.dtos;
 
+import com.example.hotelapplication.enums.RoleType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class PersonDTO {
 
     private String address;
 
-    private Date date;
+    private LocalDate date;
 
-    private String role;
+    private RoleType role;
 }
