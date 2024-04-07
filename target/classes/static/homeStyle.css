@@ -1,0 +1,461 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap");
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: "Poppins", sans-serif;
+}
+
+h1,h2{
+    color:black;
+    font-family: sans-serif;
+    font-weight: 400;
+}
+
+h3{
+    color:white;
+    font-family: sans-serif;
+    font-weight: 600;
+}
+
+a{
+    text-decoration: none;
+}
+
+li{
+    list-style: none;
+}
+
+.flex{
+    display: flex;
+}
+
+.flex_space{
+    display: flex;
+    justify-content: space-between;
+
+}
+
+button{
+    border:  none;
+    background: none;
+    outline: none;
+    transition: 0.5s;
+    cursor: pointer;
+
+}
+
+.primary-btn{
+    padding: 15px 40px;
+    background: #5cc600;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px;
+}
+
+
+.secondary-btn{
+    padding: 15px 40px;
+    background: none;
+    border: 2px solid white;
+    font-weight: bold;
+    color: white;
+}
+
+.container{
+    max-width: 100%;
+    margin: 0px;
+}
+
+/*------header-----*/
+header{
+    background: black;
+    height : 10vh;
+    line-height: 10vh;
+    padding: 0 20px;
+}
+
+header img{
+    margin: 0px 0;
+}
+
+
+header ul{
+    display: inline-block;
+}
+
+header ul li{
+    outline: none;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+
+header ul li a{
+    text-decoration: none;
+    outline: none;
+    color: white;
+    margin: 0 10px;
+    transition: 0.5s;
+}
+
+header ul li a:hover{
+    color: greenyellow;
+}
+
+header i{
+    margin: 0 20px;
+}
+
+header button{
+    border-radius: 30px;
+    padding: 10px 20px;
+}
+
+header .navlinks span{
+    display: none;
+}
+
+header img{
+    width: 70%;
+    height: 70%;
+}
+/*------header-----*/
+
+
+/*------home-----*/
+.home{
+    height: 100vh;
+    color: white;
+}
+
+.home img{
+    width: 100%;
+    height: 100vh;
+}
+
+.home .text {
+    outline: none;
+    color:white;
+    position: absolute;
+    top: 35%;
+    left: 5%;
+}
+
+.home .text h1{
+    outline: none;
+    font-size:  80px;
+    font-family: serif;
+    font-weight: 400;
+}
+
+.home p{
+    margin: 20px 0;
+}
+
+.home button{
+    margin-right: 20px;
+}
+
+.owl-nav .owl-prev,
+.owl-nav .owl-next{
+    position: absolute;
+    top: 40%;
+    height: 50px;
+    width: 50px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.owl-nav .owl-prev{
+    left: 0;
+}
+
+.owl-nav .owl-next{
+    right: 0;
+}
+/*------home-----*/
+
+
+/*------book-----*/
+.grid{
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) ;
+    grid-gap: 10px;
+}
+
+input{
+    outline: none;
+    border: none;
+    width: 100%;
+}
+.book{
+    padding: 40px 0;
+    background: black;
+    color: white;
+}
+
+h1{
+    border: none;
+    margin: 0px;
+    font-family: serif;
+
+}
+
+.book h1{
+    color: white;
+    font-size: 28px;
+
+}
+
+.book h1 span{
+    color: #5cc600;
+}
+
+.book input{
+    padding: 20px;
+}
+
+.book input:nth-last-child(1){
+    border-radius:  8px;
+    background: #5cc600;
+    color: white;
+}
+/*------book-----*/
+
+/*------about-----*/
+
+.left, .right{
+    width: 50%;
+    padding: 30px;
+}
+.top{
+    margin-top: 80px;
+}
+.mtop{
+    margin-top: 40px;
+}
+.heading h1{
+    color:white;
+    font-size: 100px;
+    font-weight: 500;
+    opacity: 0.1;
+    font-family: serif;
+    position: absolute;
+    top: -30px;
+}
+
+.heading h2{
+    color: white;
+    margin: 30px 0;
+    font-size: 45px;
+    font-family: serif;
+    font-weight: 400;
+}
+.about .heading h1{
+    color: white;
+    top: 55px;
+
+}
+
+.about{
+    background: black;
+    position: relative;
+}
+
+.about .left{
+    margin-top: 30px;
+}
+
+
+.about p{
+    color: white;
+    font-size: 15px;
+}
+
+.about button{
+    margin: 30px 0;
+}
+
+.about img{
+    height: 70%;
+    width: 100%;
+}
+/*------about-----*/
+
+
+/*------couter-----*/
+
+.counter{
+    background-image: url("./imagesForHome/background-1.png");
+    background-size: cover;
+    background-repeat:  no-repeat;
+    height: 30vh;
+    width: 100%;
+    color: white;
+
+}
+.counter .grid{
+    grid-template-columns: repeat(4, 1fr);
+    text-align: center;
+    place-items: center;
+    padding-top: 60px;
+}
+
+.counter h3{
+    font-size: 50px;
+
+}
+
+.counter hr{
+    width: 50%;
+    margin: 10px auto;
+    background:  #7fc142;
+    height: 2px;
+    border: none;
+}
+/*------couter-----*/
+
+/*------rooms-----*/
+.rooms{
+    background: black;
+    position: relative;
+}
+
+.rooms .text{
+    color: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: none;
+    padding: 30px;
+}
+
+.rooms i{
+    font-size: 12px;
+    color: yellow;
+    margin: 15px 0;
+    margin-right: 5px;
+}
+
+.rooms p{
+    color: white;
+    margin: 20px 0;
+    opacity: 0.7;
+}
+
+.rooms h4{
+    font-size: 30px;
+    line-height: 20px;
+    margin-left: 20px;
+    font-weight: 500;
+    color:#5cc600;
+}
+
+.rooms span{
+
+    font-size: 15px;
+    font-weight: 400;
+    color: white;
+}
+
+.rooms image{
+    height: 100%;
+    width: 100%;
+}
+
+
+.rooms .rate-flex .bx-bxs-star {
+    font-size: 20px; /* Adjust the size of the stars */
+    color: yellow; /* Make the stars yellow */
+    margin-right: 5px;
+}
+
+
+
+.owl-nav .owl-prev,
+.owl-nav .owl-next{
+    position: absolute;
+    top: -20%;
+    height: 50px;
+    width: 50px;
+    background:#5cc600;
+}
+
+.owl-nav .owl-prev i,
+.owl-nav .owl-next i{
+    color: black;
+
+}
+
+.owl-nav .owl-prev{
+    left: 90%;
+}
+
+.owl-nav .owl-next{
+    right: 0;
+}
+
+/*------rooms-----*/
+
+/*------services-----*/
+.services{
+    background: black;
+    position:relative;
+}
+
+.grid2{
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    grid-gap: 30px;
+}
+
+.services.left{
+
+    padding: 30px 0;
+}
+
+.services .box{
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: 0.5s;
+    padding: 20px;
+}
+
+.services .box .text{
+    padding: 50px 0;
+    border: 1px dashed white;
+}
+
+.services i{
+    font-size: 30px;
+    color: #5cc600;
+    transition: 0.5s;
+}
+
+.services h4{
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 20px;
+    transition: 0.5s;
+}
+
+.services img{
+    width: 100%;
+    height: 100%;
+}
+
+.services .box:hover{
+    background: #5cc600;
+    color: white;
+    cursor: pointer;
+}
+.services .box:hover i,
+.services .box:hover h4{
+    color: white;
+}
+
+/*------services-----*/
+

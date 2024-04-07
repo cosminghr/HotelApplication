@@ -127,6 +127,16 @@ body{
     margin: 20px 0 15px;
 
 }
+.login-link p a{
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link p a:hover{
+    text-decoration: underline;
+}
+
 
 .wrapper .input-box.datepicker {
     position: relative;
@@ -157,7 +167,7 @@ body{
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 20px;
+    font-size: 50px;
 }
 
 /* Adjust the style of the datepicker calendar icon */
@@ -167,7 +177,7 @@ body{
 
 /* Adjust the style of the datepicker dropdown */
 .ui-datepicker {
-    background: transparent;
+    background: white;
     border: 1px solid black;
     border-radius: 8px;
 }
