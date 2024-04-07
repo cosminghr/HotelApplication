@@ -71,6 +71,23 @@ public class PersonServices {
         return PersonBuilder.etoPersonDTO(personOptional.get());
     }
 
+    public PersonDTO findPersonByEmail(String email) {
+        Optional<Person> personOptional = personRepository.findByEmail(email);
+        if (!personOptional.isPresent()) {
+            LOGGER.error("Person with id {} was not found in db", email);
+            return null;
+        }
+        LOGGER.info("Person with id {} was found in db", email);
+        return PersonBuilder.etoPersonDTO(personOptional.get());
+    }
+    public PersonDTO authenticate(String email, String password) {
+        PersonDTO personDTO = findPersonByEmail(email);
+        if (personDTO != null && personDTO.getPassword().equals(password)) {
+            return personDTO;
+        }
+        return null; // Authentication failed
+    }
+
     /**
      * Inserts a new person into the database.
      *

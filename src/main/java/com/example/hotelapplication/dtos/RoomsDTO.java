@@ -24,6 +24,7 @@ public class RoomsDTO {
     private double roomRate;
 
     private String roomDescription;
+    private String roomImagePath;
 
     private int roomCost;
 

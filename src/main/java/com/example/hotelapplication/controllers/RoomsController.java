@@ -46,7 +46,6 @@ public class RoomsController {
     @GetMapping("/all")
     public ModelAndView getRooms() {
         List<RoomsDTO> rooms = roomsServices.findRooms();
-        System.out.println(rooms.toString());
         ModelAndView modelAndView = new ModelAndView("rooms");
         modelAndView.addObject("rooms", rooms);
         return modelAndView;

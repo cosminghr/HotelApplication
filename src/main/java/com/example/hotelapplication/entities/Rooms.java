@@ -31,6 +31,8 @@ public class Rooms {
     private String roomDescription;
     @Column(name = "roomCost", nullable = false)
     private int roomCost;
+    @Column(name="roomImage", nullable = false)
+    private String roomImagePath;
     @ManyToMany(mappedBy = "rooms", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<Reservation> reservations;
 

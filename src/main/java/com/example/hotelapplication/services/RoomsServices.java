@@ -142,6 +142,8 @@ public class RoomsServices {
             existingRoom.setRoomCost(roomsDTO.getRoomCost());
             existingRoom.setRoomType(roomsDTO.getRoomType());
             existingRoom.setRoomRate(roomsDTO.getRoomRate());
+            existingRoom.setRoomImagePath(roomsDTO.getRoomImagePath());
+
 
             // Update the list of services
             List<Services> updatedServices = new ArrayList<>();

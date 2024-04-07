@@ -28,6 +28,7 @@
     <tr>
       <th>ID</th>
       <th>Room Number</th>
+      <th>Image</th>
       <th>Room Type</th>
       <th>Capacity</th>
       <th>Rate</th>
@@ -41,6 +42,9 @@
     <tr th:each="room : ${rooms}">
       <td th:text="${room.roomId}"></td>
       <td th:text="${room.roomNumber}"></td>
+      <td>
+        <img th:src="@{'/images/' + ${room.roomImagePath}}" alt="..." width="100">
+      </td>
       <td th:text="${room.roomType}"></td>
       <td th:text="${room.roomCapacity}"></td>
       <td>
