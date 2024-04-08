@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.example.hotelapplication.constants.ServiceConstants.*;
+
 /**
  * Service class for managing operations related to Services entities.
  */
@@ -73,7 +75,7 @@ public class ServicesServices {
     public UUID insertService(ServicesDTO servicesDTO) {
         Services services = ServicesBuilder.stoEntity(servicesDTO);
         services = servicesRepository.save(services);
-        LOGGER.debug("Service with id {} was inserted in db", services.getServiceId());
+        LOGGER.debug(SERVICE_INSERT, services.getServiceId());
         return services.getServiceId();
     }
 
@@ -86,10 +88,10 @@ public class ServicesServices {
     public ServicesDTO findServiceById(UUID id) {
         Optional<Services> optionalServices = servicesRepository.findById(id);
         if (optionalServices.isPresent()) {
-            LOGGER.info("Service with id {} was found in db", id);
+            LOGGER.info(SERVICE_FOUND, id);
             return ServicesBuilder.etoservicesDTO(optionalServices.get());
         } else {
-            LOGGER.error("Service with id {} was not found in db", id);
+            LOGGER.error(SERVICE_NOT_FOUND, id);
             return null;
         }
     }
@@ -107,10 +109,10 @@ public class ServicesServices {
             existingServices.setServiceName(servicesDTO.getServiceName());
             existingServices.setServiceDescription(servicesDTO.getServiceDescription());
             Services updatedServices = servicesRepository.save(existingServices);
-            LOGGER.debug("Service with id {} was updated in db.", existingServices.getServiceId());
+            LOGGER.debug(SERVICE_UPDATED, existingServices.getServiceId());
             return ServicesBuilder.etoservicesDTO(updatedServices);
         } else {
-            LOGGER.warn("Service with id {} not found. Update operation aborted.", servicesDTO.getServiceId());
+            LOGGER.warn(SERVICE_NOT_UPDATED, servicesDTO.getServiceId());
             return null;
         }
     }
@@ -142,9 +144,9 @@ public class ServicesServices {
 
             // Now delete the service itself
             servicesRepository.deleteById(id);
-            LOGGER.info("Service with id {} deleted successfully.", id);
+            LOGGER.info(SERVICE_DELETED, id);
         } else {
-            LOGGER.info("Service with id {} not found. Delete operation aborted.", id);
+            LOGGER.info(SERVICE_NOT_DELETED, id);
         }
     }
 

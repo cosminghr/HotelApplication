@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.hotelapplication.constants.DiscountPolicy.*;
+import static com.example.hotelapplication.constants.ReservationsConstants.*;
 
 /**
  * Service class for managing operations related to Reservation entities.
@@ -95,10 +96,10 @@ public class ReservationServices {
         // Retrieve the room from the repository by ID
         Optional<Rooms> optionalRooms = roomsRepository.findById(id);
         if (optionalRooms.isPresent()) {
-            LOGGER.info("Room with id {} was found in db", id);
+            LOGGER.info(ROOM_FOUND, id);
             return RoomsBuilder.etoRoomsDTO(optionalRooms.get());
         } else {
-            LOGGER.error("Room with id {} was not found in db", id);
+            LOGGER.error(ROOM_NOT_FOUND, id);
             return null;
         }
     }
@@ -113,10 +114,10 @@ public class ReservationServices {
         // Retrieve the person from the repository by ID
         Optional<Person> personOptional = personRepository.findById(id);
         if (!personOptional.isPresent()) {
-            LOGGER.error("Person with id {} was not found in db", id);
+            LOGGER.error(PERSON_FOUND, id);
             return null;
         }
-        LOGGER.info("Person with id {} was found in db", id);
+        LOGGER.info(PERSON_NOT_FOUND, id);
         return PersonBuilder.etoPersonDTO(personOptional.get());
     }
 
@@ -130,10 +131,10 @@ public class ReservationServices {
         // Retrieve the reservation from the repository by ID
         Optional<Reservation> optionalReservation = reservationRepository.findById(id);
         if (!optionalReservation.isPresent()) {
-            LOGGER.error("Reservation with id {} was not found in db", id);
+            LOGGER.error(RESERVATION_NOT_FOUND, id);
             return null;
         }
-        LOGGER.info("Reservation with id {} was found in db", id);
+        LOGGER.info(RESERVATION_FOUND, id);
         return ReservationBuilder.etoReservationDTO(optionalReservation.get());
     }
 
@@ -172,14 +173,14 @@ public class ReservationServices {
         // Retrieve the person from the repository by ID
         Optional<Person> personOptional = personRepository.findById(reservationDTO.getPerson().getId());
         if (personOptional.isEmpty()) {
-            LOGGER.warn("Person with id {} not found. Reservation creation aborted.", reservationDTO.getPerson().getId());
+            LOGGER.warn(PERSON_FOUND, reservationDTO.getPerson().getId());
             return null;
         }
 
         // Check if the list of rooms is empty
         List<RoomsDTO> roomsDTOs = reservationDTO.getRooms();
         if (roomsDTOs.isEmpty()) {
-            LOGGER.warn("List of rooms is empty. Reservation creation aborted.");
+            LOGGER.warn(LIST_EMPTY);
             return null;
         }
 
@@ -188,11 +189,11 @@ public class ReservationServices {
         for (RoomsDTO roomDTO : roomsDTOs) {
             Optional<Rooms> roomOptional = roomsRepository.findById(roomDTO.getRoomId());
             if (roomOptional.isEmpty()) {
-                LOGGER.warn("Room with id {} not found. Reservation creation aborted.", roomDTO.getRoomId());
+                LOGGER.warn(ROOM_NOT_FOUND, roomDTO.getRoomId());
                 return null;
             }
             if (!isRoomAvailableForPeriodWithoutCurrentReservation(roomDTO.getRoomId(), reservationDTO.getReservationStart(), reservationDTO.getReservationEnd(), reservationDTO.getReservationId())) {
-                LOGGER.warn("Room with id {} is not available for the specified period. Reservation creation aborted.", roomDTO.getRoomId());
+                LOGGER.warn(ROOM_NOT_AVAILABLE, roomDTO.getRoomId());
                 return null;
             } else {
                 roomsDTOsForRes.add(roomDTO);
@@ -201,7 +202,7 @@ public class ReservationServices {
 
         // Check if reservation start date is in real-time
         if (!isRealTime(reservationDTO)) {
-            LOGGER.warn("Reservation start date is in the past or end date is before start date. Reservation creation aborted.");
+            LOGGER.warn(BAD_TIME);
             return null;
         }
 
@@ -217,7 +218,7 @@ public class ReservationServices {
         Reservation reservation = ReservationBuilder.stoEntity(reservationDTO);
         reservation = reservationRepository.save(reservation);
 
-        LOGGER.info("Reservation with id {} was inserted in db", reservation.getReservationId());
+        LOGGER.info(RESERVATION_INSERT, reservation.getReservationId());
         return reservation.getReservationId();
     }
 
@@ -247,7 +248,7 @@ public class ReservationServices {
         LocalDate newEnd = reservationDTO.getReservationEnd();
         for (UUID roomId : roomIds) {
             if (!isRoomAvailableForPeriodWithoutCurrentReservation(roomId, newStart, newEnd, existingReservation.getReservationId())) {
-                LOGGER.warn("Room with id {} is not available for the updated period. Update operation aborted.", roomId);
+                LOGGER.warn(ROOM_NOT_AVAILABLE, roomId);
                 return null;
             }
         }
@@ -274,7 +275,7 @@ public class ReservationServices {
         // Save the updated reservation in the database
         Reservation updatedReservation = reservationRepository.save(existingReservation);
 
-        LOGGER.info("Reservation with id {} was updated in db", existingReservation.getReservationId());
+        LOGGER.info(RESERVATION_UPDATED, existingReservation.getReservationId());
         return ReservationBuilder.etoReservationDTO(updatedReservation);
     }
 
@@ -300,9 +301,9 @@ public class ReservationServices {
 
             // Delete the reservation
             reservationRepository.deleteById(id);
-            LOGGER.info("Reservation with id {} deleted successfully.", id);
+            LOGGER.info(RESERVATION_DELETED, id);
         } else {
-            LOGGER.info("Reservation with id {} not found. Delete operation aborted.", id);
+            LOGGER.info(RESERVATION_NOT_DELETED, id);
         }
     }
 
@@ -349,8 +350,8 @@ public class ReservationServices {
         int discountedCost = totalCostWithoutDiscount - (totalCostWithoutDiscount * discount / 100);
 
         // Log the old and new total prices
-        LOGGER.info("Old Total Price: {}", totalCostWithoutDiscount);
-        LOGGER.info("New Total Price After Applying {}% Discount: {}", discount, discountedCost);
+        LOGGER.info(OLD_COST, totalCostWithoutDiscount);
+        LOGGER.info(NEW_COST, discount, discountedCost);
 
         return discountedCost; // Return the new total cost after discount
     }
@@ -383,7 +384,7 @@ public class ReservationServices {
         // Retrieve the room by its ID
         Optional<Rooms> roomOptional = roomsRepository.findById(roomId);
         if (roomOptional.isEmpty()) {
-            LOGGER.warn("Room with id {} not found.", roomId);
+            LOGGER.warn(ROOM_NOT_FOUND, roomId);
             return false; // Room not found, consider it unavailable
         }
         Rooms room = roomOptional.get();
@@ -422,7 +423,7 @@ public class ReservationServices {
         // Retrieve the person from the repository by ID
         Optional<Person> personOptional = personRepository.findById(personId);
         if (personOptional.isEmpty()) {
-            LOGGER.warn("Person with id {} not found.", personId);
+            LOGGER.warn(PERSON_NOT_FOUND, personId);
             return 0; // Person not found, no discount
         }
         Person person = personOptional.get();

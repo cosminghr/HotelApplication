@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.example.hotelapplication.constants.PersonConstants.*;
+
 /**
  * Service class for managing operations related to Person entities.
  */
@@ -86,10 +88,10 @@ public class PersonServices {
         Optional<Person> personOptional = personRepository.findByEmail(email);
         // Check if the person exists, if not, log an error
         if (!personOptional.isPresent()) {
-            LOGGER.error("Person with email {} was not found in db", email);
+            LOGGER.error(PERSON_NOT_FOUND, email);
             return null;
         }
-        LOGGER.info("Person with email {} was found in db", email);
+        LOGGER.info(PERSON_FOUND, email);
         // Convert the entity to DTO and return
         return PersonBuilder.etoPersonDTO(personOptional.get());
     }
@@ -106,8 +108,10 @@ public class PersonServices {
         PersonDTO personDTO = findPersonByEmail(email);
         // Check if the person exists and the provided password matches
         if (personDTO != null && personDTO.getPassword().equals(password)) {
+            LOGGER.info(PERSON_IN, email);
             return personDTO;
         }
+        LOGGER.info(PERSON_NOT_IN, email);
         return null; // Authentication failed
     }
 
@@ -124,13 +128,13 @@ public class PersonServices {
                 .findFirst();
         // If a person with the same email exists, log a warning and abort insertion
         if (existingPerson.isPresent()) {
-            LOGGER.warn("Email address {} is already in use by another person. Insertion aborted.", personDTO.getEmail());
+            LOGGER.warn(EMAIL_NOT_FOUND, personDTO.getEmail());
             return null;
         }
         // Convert the DTO to entity and save it to the database
         Person person = PersonBuilder.stoEntity(personDTO);
         person = personRepository.save(person);
-        LOGGER.info("Person with id {} was inserted in db", person.getId());
+        LOGGER.info(PERSON_INSERT, person.getId());
         return person.getId();
     }
 
@@ -153,12 +157,12 @@ public class PersonServices {
             existingPerson.setDate(personDTO.getDate());
             // Save the updated person to the database
             Person updatedPerson = personRepository.save(existingPerson);
-            LOGGER.info("Person with id {} was updated in db", existingPerson.getId());
+            LOGGER.info(PERSON_UPDATED, existingPerson.getId());
             // Convert the updated entity to DTO and return
             return PersonBuilder.etoPersonDTO(updatedPerson);
         } else {
             // If the person is not found, log a warning and return the original DTO
-            LOGGER.warn("Person with id {} not found. Update operation aborted.", personDTO.getId());
+            LOGGER.warn(PERSON_NOT_UPDATED, personDTO.getId());
             return personDTO;
         }
     }
@@ -188,10 +192,10 @@ public class PersonServices {
             }
             // Now delete the person
             personRepository.deleteById(id);
-            LOGGER.info("Person with id {} and associated reservations deleted successfully.", id);
+            LOGGER.info(PERSON_DELETE, id);
         } else {
             // If the person is not found, log a message
-            LOGGER.info("Person with id {} not found. Delete operation aborted.", id);
+            LOGGER.info(PERSON_NOT_DELETE, id);
         }
     }
 }

@@ -5,6 +5,7 @@ import com.example.hotelapplication.services.PersonServices;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -118,10 +119,17 @@ public class PersonController {
      */
     @PostMapping("/create")
     public ModelAndView insertPerson(@ModelAttribute PersonDTO personDTO) {
-        personServices.insertPerson(personDTO);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("redirect:/person/all");
-        return modelAndView;
+        try{
+            personServices.insertPerson(personDTO);
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("redirect:/person/all");
+            return modelAndView;
+        }catch(DataIntegrityViolationException e){
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("errorPage");
+            return modelAndView;
+        }
+
     }
 
     /**

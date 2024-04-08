@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.example.hotelapplication.constants.RoomsConstants.*;
+
 /**
  * Service class for managing operations related to Rooms entities.
  */
@@ -65,10 +67,10 @@ public class RoomsServices {
     public RoomsDTO findRoomById(UUID id) {
         Optional<Rooms> optionalRooms = roomsRepository.findById(id);
         if (optionalRooms.isPresent()) {
-            LOGGER.info("Room with id {} was found in db", id);
+            LOGGER.info(ROOM_FOUND, id);
             return RoomsBuilder.etoRoomsDTO(optionalRooms.get());
         } else {
-            LOGGER.error("Room with id {} was not found in db", id);
+            LOGGER.error(ROOM_NOT_FOUND, id);
             return null;
         }
     }
@@ -94,10 +96,10 @@ public class RoomsServices {
     public ServicesDTO findServiceByIdInRoom(UUID id) {
         Optional<Services> optionalServices = servicesRepository.findById(id);
         if (optionalServices.isPresent()) {
-            LOGGER.info("Service with id {} was found in db", id);
+            LOGGER.info(SERVICE_FOUND, id);
             return ServicesBuilder.etoservicesDTO(optionalServices.get());
         } else {
-            LOGGER.error("Service with id {} was not found in db", id);
+            LOGGER.error(SERVICE_NOT_FOUND, id);
             return null;
         }
     }
@@ -166,10 +168,10 @@ public class RoomsServices {
             existingRoom.setServices(updatedServices);
 
             Rooms updatedRoom = roomsRepository.save(existingRoom);
-            LOGGER.info("Room with id {} was updated in db.", existingRoom.getRoomId());
+            LOGGER.info(ROOM_UPDATED, existingRoom.getRoomId());
             return RoomsBuilder.etoRoomsDTO(updatedRoom);
         } else {
-            LOGGER.error("Room with id {} not found. Update operation aborted.", roomsDTO.getRoomId());
+            LOGGER.error(ROOM_NOT_UPDATED, roomsDTO.getRoomId());
             return null;
         }
     }

@@ -67,11 +67,18 @@ public class RegisterController {
         personDTO.setAddress(address);
         personDTO.setDate(date);
         personDTO.setRole(RoleType.CLIENT); // Set the role to CLIENT
+        try{
+            UUID personId = personServices.insertPerson(personDTO);
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("redirect:/");
+            return modelAndView;
+        }catch (Exception e){
 
+            ModelAndView modelAndView = new ModelAndView();
+            modelAndView.setViewName("errorPage");
+            return modelAndView;
+        }
         // Insert the person into the database
-        UUID personId = personServices.insertPerson(personDTO);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("redirect:/");
-        return modelAndView;
+
     }
 }
