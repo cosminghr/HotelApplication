@@ -108,6 +108,19 @@ public class ReservationServices {
         return ReservationBuilder.etoReservationDTO(optionalReservation.get());
     }
 
+    public List<ReservationDTO> findReservationsByPerson(UUID personId){
+        Optional<Person> person = personRepository.findById(personId);
+        List<Reservation> reservationList = reservationRepository.findAll();
+        for(Reservation reservation1: reservationList){
+            if(reservation1.getPerson().equals(person)){
+                reservationList.add(reservation1);
+            }
+        }
+        return reservationList.stream()
+                .map(ReservationBuilder::etoReservationDTO)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Inserts a new reservation into the database.
      *

@@ -3,9 +3,11 @@ package com.example.hotelapplication.controllers;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
-import com.example.hotelapplication.services.PersonServices;
+import com.example.hotelapplication.entities.Person;
+import com.example.hotelapplication.enums.RoleType;
+import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.services.ReservationServices;
-import com.example.hotelapplication.services.RoomsServices;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -25,16 +28,21 @@ import java.util.UUID;
 @RequestMapping(value = "/reservations")
 public class ReservationController {
     private final ReservationServices reservationServices;
+    private final PersonRepository personRepository;
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationController.class);
 
     /**
      * Constructor for ReservationController.
      *
      * @param reservationServices The service for handling Reservation-related operations.
+     * @param personRepository
      */
-    public ReservationController(ReservationServices reservationServices) {
+    public ReservationController(ReservationServices reservationServices, PersonRepository personRepository) {
         this.reservationServices = reservationServices;
+        this.personRepository = personRepository;
     }
+
+
 
     /**
      * Retrieves a list of all reservations.
@@ -46,6 +54,21 @@ public class ReservationController {
         List<ReservationDTO> reservations = reservationServices.findReservations();
         ModelAndView modelAndView = new ModelAndView("reservations");
         modelAndView.addObject("reservations", reservations);
+        return modelAndView;
+    }
+
+    @GetMapping("/userReservations")
+    public ModelAndView getReservationsUser( HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        List<ReservationDTO> reservations = reservationServices.findReservationsByPerson(authenticatedPerson.getId());
+        List<ReservationDTO> newReservations = new ArrayList<>();
+        for(ReservationDTO reservationDTO: reservations){
+            if(reservationDTO.getPerson().getId().equals(authenticatedPerson.getId())){
+                newReservations.add(reservationDTO);
+            }
+        }
+        ModelAndView modelAndView = new ModelAndView("userReservations");
+        modelAndView.addObject("reservations", newReservations);
         return modelAndView;
     }
 
@@ -113,6 +136,31 @@ public class ReservationController {
         modelAndView.setViewName("redirect:/reservations/all");
         return modelAndView;
     }
+
+    @PostMapping("/createReservationUser")
+    public ModelAndView insertReservationUser(@ModelAttribute ReservationDTO reservationDTO,
+                                              @RequestParam("roomIds") List<UUID> idRooms,
+                                              @RequestParam("startDate")LocalDate startDate,
+                                              @RequestParam("endDate") LocalDate endDate,
+                                              HttpServletRequest request){
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO personDTO = reservationServices.findPersonByIdInReservation(authenticatedPerson.getId());
+        List<RoomsDTO> roomsDTOs = new ArrayList<>();
+        for(UUID roomId : idRooms){
+            RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
+            roomsDTOs.add(roomsDTO);
+        }
+        reservationDTO.setRooms(roomsDTOs);
+        reservationDTO.setPerson(personDTO);
+        reservationDTO.setReservationStart(startDate);
+        reservationDTO.setReservationEnd(endDate);
+        reservationServices.insertReservations(reservationDTO);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("redirect:/reservations/userReservations");
+        return modelAndView;
+
+
+    }
     /**
      * Updates an existing reservation in the database.
      *
@@ -121,7 +169,8 @@ public class ReservationController {
      * or HttpStatus.NOT_FOUND if the reservation is not found.
      */
     @PostMapping("/edit/{id}")
-    public ModelAndView updateReservation(@PathVariable("id") UUID id, @ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms) {
+    public ModelAndView updateReservation(@PathVariable("id") UUID id, @ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         reservationDTO.setReservationId(id);
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
         for (UUID roomId : idRooms) {
@@ -133,9 +182,16 @@ public class ReservationController {
         ModelAndView modelAndView = new ModelAndView();
         if (updatedReservationDTO != null) {
             modelAndView.addObject("message", "Reservation with the id = " + reservationDTO.getReservationId() + " was successfully updated.");
-            modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
+            if(authenticatedPerson.getRole()== RoleType.ADMIN){
+                modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
+            }else if(authenticatedPerson.getRole() == RoleType.CLIENT){
+                modelAndView.setViewName("redirect:/reservations/userReservations");
+            }else{
+                modelAndView.setViewName("redirect:/errorPage");
+            }
+
         } else {
-            modelAndView.setViewName("redirect:/reservations/all");
+            modelAndView.setViewName("redirect:/errorPage");
         }
         return modelAndView;
     }
@@ -150,10 +206,17 @@ public class ReservationController {
      * or HttpStatus.NOT_FOUND if the reservation is not found.
      */
     @PostMapping("/delete/{id}")
-    public ModelAndView deleteReservation(@PathVariable("id") UUID id) {
+    public ModelAndView deleteReservation(@PathVariable("id") UUID id, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         reservationServices.deleteReservations(id);
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("redirect:/reservations/all");
+        if(authenticatedPerson.getRole()== RoleType.ADMIN){
+            modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
+        }else if(authenticatedPerson.getRole() == RoleType.CLIENT){
+            modelAndView.setViewName("redirect:/reservations/userReservations");
+        }else{
+            modelAndView.setViewName("redirect:/errorPage");
+        }
         return modelAndView;
     }
 

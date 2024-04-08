@@ -51,6 +51,14 @@ public class RoomsController {
         return modelAndView;
     }
 
+    @GetMapping("/allRooms")
+    public ModelAndView getRoomsUser() {
+        List<RoomsDTO> rooms = roomsServices.findRooms();
+        ModelAndView modelAndView = new ModelAndView("bookRooms");
+        modelAndView.addObject("rooms", rooms);
+        return modelAndView;
+    }
+
     /**
      * Retrieves a room by its ID.
      *
