@@ -32,7 +32,8 @@
       <th>Room Cost</th>
       <th>Start Date</th>
       <th>End Date</th>
-      <th>Cost</th>
+      <th>Initial Cost</th>
+      <th>Final Cost</th>
       <th>Action</th>
     </tr>
     </thead>
@@ -53,7 +54,8 @@
       </td>
       <td th:text="${reservation.reservationStart}"></td>
       <td th:text="${reservation.reservationEnd}"></td>
-      <td th:text="${reservation.reservationCost}"></td>
+      <td th:text="${reservation.reservationInitialCost}"></td>
+      <td th:text="${reservation.reservationFinalCost}"></td>
       <!-- Add your action buttons or links here -->
       <td>
         <form th:action="@{'/reservations/delete/' + ${reservation.reservationId}}" method="post">

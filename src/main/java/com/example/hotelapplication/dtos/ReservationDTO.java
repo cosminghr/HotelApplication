@@ -17,7 +17,8 @@ public class ReservationDTO {
     private List<RoomsDTO> rooms;
     private LocalDate reservationStart;
     private LocalDate reservationEnd;
-    private int reservationCost;
+    private int reservationInitialCost;
+    private int reservationFinalCost;
 
 }
 

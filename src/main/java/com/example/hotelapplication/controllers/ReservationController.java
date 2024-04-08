@@ -209,6 +209,7 @@ public class ReservationController {
             RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
             roomsDTOs.add(roomsDTO);
         }
+        reservationDTO.setPerson(authenticatedPerson);
         reservationDTO.setRooms(roomsDTOs);
         ReservationDTO updatedReservationDTO = reservationServices.updateReservations(reservationDTO);
         ModelAndView modelAndView = new ModelAndView();

@@ -41,8 +41,11 @@ public class Reservation {
     private LocalDate reservationStart;
     @Column(name = "reservationEnd", nullable = false)
     private LocalDate reservationEnd;
-    @Column(name = "reservationCost", nullable = false)
-    private int reservationCost;
+    @Column(name = "reservationInitialCost", nullable = false)
+    private int reservationInitialCost;
+
+    @Column(name = "reservationFinalCost", nullable = false)
+    private int reservationFinalCost;
 
 }
 

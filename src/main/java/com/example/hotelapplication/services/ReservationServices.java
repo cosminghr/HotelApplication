@@ -1,5 +1,5 @@
 package com.example.hotelapplication.services;
-
+import com.example.hotelapplication.constants.*;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
@@ -20,6 +20,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.hotelapplication.constants.DiscountPolicy.*;
 
 /**
  * Service class for managing operations related to Reservation entities.
@@ -203,8 +205,12 @@ public class ReservationServices {
             return null;
         }
 
-        // Calculate total cost of the reservation
-        reservationDTO.setReservationCost(calculateTotalCost(reservationDTO));
+        int initialCost = calculateTotalCost(reservationDTO);
+        int finalCost = calculateTotalCostWithDiscount(reservationDTO);
+
+        // Update total cost in the reservation
+        reservationDTO.setReservationInitialCost(initialCost);
+        reservationDTO.setReservationFinalCost(finalCost);
         reservationDTO.setRooms(roomsDTOsForRes);
 
         // Save the reservation in the database
@@ -249,13 +255,21 @@ public class ReservationServices {
         // Update reservation fields
         existingReservation.setReservationStart(reservationDTO.getReservationStart());
         existingReservation.setReservationEnd(reservationDTO.getReservationEnd());
-        existingReservation.setReservationCost(calculateTotalCost(reservationDTO));
 
         // Set the updated list of rooms to the reservation
         List<Rooms> rooms = reservationDTO.getRooms().stream()
                 .map(RoomsBuilder::stoEntity)
                 .collect(Collectors.toList());
         existingReservation.setRooms(rooms);
+
+        System.out.println(reservationDTO.toString());
+        // Calculate the new total cost after applying the discount
+        int initialCost = calculateTotalCost(reservationDTO);
+        int finalCost = calculateTotalCostWithDiscount(reservationDTO);
+
+        // Update total cost in the reservation
+        existingReservation.setReservationInitialCost(initialCost);
+        existingReservation.setReservationFinalCost(finalCost);
 
         // Save the updated reservation in the database
         Reservation updatedReservation = reservationRepository.save(existingReservation);
@@ -315,8 +329,32 @@ public class ReservationServices {
             totalCost += numberOfNights * roomCost;
         }
 
-        return totalCost;
+        // Log the total price
+        LOGGER.info("Total Price: {}", totalCost);
+
+        return totalCost; // Return the total cost without discount
     }
+
+    public int calculateTotalCostWithDiscount(ReservationDTO reservationDTO) {
+        // Get the person's ID from the reservation
+        UUID personId = reservationDTO.getPerson().getId();
+
+        // Calculate the discount for the person
+        int discount = calculatePersonDiscount(personId, reservationDTO.getReservationId());
+
+        // Calculate the total cost without discount
+        int totalCostWithoutDiscount = calculateTotalCost(reservationDTO);
+
+        // Calculate the new total cost after applying the discount
+        int discountedCost = totalCostWithoutDiscount - (totalCostWithoutDiscount * discount / 100);
+
+        // Log the old and new total prices
+        LOGGER.info("Old Total Price: {}", totalCostWithoutDiscount);
+        LOGGER.info("New Total Price After Applying {}% Discount: {}", discount, discountedCost);
+
+        return discountedCost; // Return the new total cost after discount
+    }
+
 
 
     /**
@@ -373,4 +411,43 @@ public class ReservationServices {
 
         return true; // Room is available for the given period excluding the current reservation
     }
+
+    /**
+     * Calculates the number of reservations for each person and applies a discount if applicable.
+     *
+     * @param personId        The UUID of the person.
+     * @return The discount percentage for the person.
+     */
+    public int calculatePersonDiscount(UUID personId, UUID currentReservationId) {
+        // Retrieve the person from the repository by ID
+        Optional<Person> personOptional = personRepository.findById(personId);
+        if (personOptional.isEmpty()) {
+            LOGGER.warn("Person with id {} not found.", personId);
+            return 0; // Person not found, no discount
+        }
+        Person person = personOptional.get();
+
+        // Retrieve all reservations associated with the person excluding the current reservation
+        List<Reservation> personReservations = reservationRepository.findByPersonId(personId);
+        personReservations.removeIf(reservation -> reservation.getReservationId().equals(currentReservationId));
+
+        // Calculate the number of reservations for the person
+        int numberOfReservations = personReservations.size();
+
+        // Apply discount based on the discount policy
+        if(numberOfReservations >= REQUIRED_NUMBER_OF_RESERVATIONS_SMALL){
+            if (numberOfReservations >= DiscountPolicy.REQUIRED_NUMBER_OF_RESERVATIONS_GREAT) {
+                return DiscountPolicy.DISCOUNT_PERCENTAGE_GREAT;
+            } else if (numberOfReservations >= DiscountPolicy.REQUIRED_NUMBER_OF_RESERVATIONS_MEDIUM) {
+                return DiscountPolicy.DISCOUNT_PERCENTAGE_MEDIUM;
+            } else if (numberOfReservations >= DiscountPolicy.REQUIRED_NUMBER_OF_RESERVATIONS_SMALL) {
+                return DiscountPolicy.DISCOUNT_PERCENTAGE_SMALL;
+            }
+        }
+
+        return 0; // No discount
+    }
+
+
+
 }
