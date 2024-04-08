@@ -33,7 +33,7 @@ public class ServicesServices {
      * Constructor for ServicesServices.
      *
      * @param servicesRepository The repository for Services entities.
-     * @param roomsRepository
+     * @param roomsRepository    The repository for Rooms entities.
      */
     public ServicesServices(ServicesRepository servicesRepository, RoomsRepository roomsRepository) {
         this.servicesRepository = servicesRepository;
@@ -41,9 +41,9 @@ public class ServicesServices {
     }
 
     /**
-     * Retrieves a list of ServicesDTO objects representing all services in the database.
+     * Retrieves a list of RoomsDTO objects representing all rooms in the database.
      *
-     * @return List of ServicesDTO objects.
+     * @return List of RoomsDTO objects.
      */
     public List<RoomsDTO> findAllRooms() {
         List<Rooms> rooms = roomsRepository.findAll();
@@ -52,6 +52,11 @@ public class ServicesServices {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves a list of ServicesDTO objects representing all services in the database.
+     *
+     * @return List of ServicesDTO objects.
+     */
     public List<ServicesDTO> findAllServices() {
         List<Services> servicesList = servicesRepository.findAll();
         return servicesList.stream()
@@ -128,13 +133,11 @@ public class ServicesServices {
                 while (iterator.hasNext()) {
                     Services roomService = iterator.next();
                     if (roomService.getServiceId().equals(id)) {
-                        System.out.println("Found service in room: " + roomService.getServiceId());
                         iterator.remove(); // Remove the service from the room
                     }
                 }
                 room.setServices(services);
-                roomsRepository.save(room);// Update the room with the modified services list
-                System.out.println(services.toString());
+                roomsRepository.save(room); // Update the room with the modified services list
             }
 
             // Now delete the service itself

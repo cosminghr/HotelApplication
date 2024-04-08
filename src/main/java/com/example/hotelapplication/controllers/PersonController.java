@@ -2,6 +2,7 @@ package com.example.hotelapplication.controllers;
 
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.services.PersonServices;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +38,7 @@ public class PersonController {
     /**
      * Retrieves a list of PersonDTO objects representing all persons.
      *
-     * @return ResponseEntity containing the list of PersonDTOs and HttpStatus OK.
+     * @return ModelAndView containing the list of PersonDTOs and the view name "person".
      */
     @GetMapping(value = "/all")
     public ModelAndView getPersons() {
@@ -55,18 +55,46 @@ public class PersonController {
             return errorModelAndView;
         }
     }
+
+    /**
+     * Retrieves the profile of a specific person.
+     *
+     * @param request The HttpServletRequest object representing the HTTP request.
+     * @return ModelAndView representing the user profile view.
+     */
+    @GetMapping(value = "/userProfile")
+    public ModelAndView getPersonProfile(HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
+        ModelAndView modelAndView = new ModelAndView("userProfile");
+        modelAndView.addObject("persons", person);
+        return modelAndView;
+    }
+
+    /**
+     * Retrieves a specific person for editing by ID.
+     *
+     * @param id The UUID of the person to edit.
+     * @return ModelAndView representing the edit person view.
+     */
     @GetMapping("/edit/{id}")
-    public ModelAndView edit(@PathVariable("id") UUID id){
+    public ModelAndView edit(@PathVariable("id") UUID id) {
         PersonDTO person = personServices.findPersonById(id);
         ModelAndView modelAndView = new ModelAndView("editPerson");
         modelAndView.addObject("person", person);
         return modelAndView;
     }
 
+    /**
+     * Retrieves the view for creating a new person.
+     *
+     * @return ModelAndView representing the create person view.
+     */
     @GetMapping("/createPerson")
-    public ModelAndView create(){
+    public ModelAndView create() {
         return new ModelAndView("createPerson");
     }
+
     /**
      * Retrieves a specific person by ID.
      *
@@ -86,7 +114,7 @@ public class PersonController {
      * Inserts a new person into the database.
      *
      * @param personDTO The PersonDTO object to be inserted.
-     * @return ResponseEntity containing the generated UUID for the newly inserted person and HttpStatus CREATED.
+     * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/create")
     public ModelAndView insertPerson(@ModelAttribute PersonDTO personDTO) {
@@ -101,7 +129,7 @@ public class PersonController {
      *
      * @param id        The UUID of the person to be updated.
      * @param personDTO The updated PersonDTO object.
-     * @return ResponseEntity with a success message and HttpStatus OK if the update is successful, else HttpStatus NOT_FOUND.
+     * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/edit/{id}")
     public ModelAndView updatePerson(@PathVariable("id") UUID id, @ModelAttribute PersonDTO personDTO) {
@@ -116,7 +144,7 @@ public class PersonController {
      * Deletes a person from the database.
      *
      * @param id The UUID of the person to be deleted.
-     * @return ResponseEntity with a success message and HttpStatus OK if the deletion is successful, else HttpStatus NOT_FOUND.
+     * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/delete/{id}")
     public ModelAndView deletePerson(@PathVariable("id") UUID id) {

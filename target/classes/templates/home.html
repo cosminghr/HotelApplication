@@ -23,10 +23,12 @@
       <ul id="menuList">
         <li><a href="/home">Home</a></li>
         <li><a href="/about">About</a></li>
-        <li><a href="/profile">Profile</a></li>
-        <li><a href="/rooms">Our Rooms</a></li>
+        <li><a href="/person/userProfile">Profile</a></li>
+        <li><a href="/rooms/allRooms">Our Rooms</a></li>
         <li><a href="reservations/userReservations">Reservations</a></li>
         <li><a href="/contact">Contact</a></li>
+        <li><a href="/">LogOut</a></li>
+
       </ul>
       <ul>
         <li><a href="/rooms/allRooms" class="primary-btn"> BOOK NOW </a></li>
@@ -306,7 +308,7 @@
             <p th:text="${room.roomDescription}"></p>
             <p th:text="${room.roomRate}"></p>
             <div class="button flex">
-              <button class="primary-btn">BOOK NOW</button>
+              <a href="/rooms/allRooms" class="primary-btn">BOOK NOW</a>
               <h4 th:text="'$' + ${room.roomCost}"></h4>
               <h4><span><br>Per Night</span></h4>
             </div>
@@ -384,6 +386,11 @@
 <script>
   function scrollToAbout() {
     var aboutSection = document.getElementById('about');
+    aboutSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function scrollToAbout() {
+    var aboutSection = document.getElementById('about1');
     aboutSection.scrollIntoView({ behavior: 'smooth' });
   }
 </script>

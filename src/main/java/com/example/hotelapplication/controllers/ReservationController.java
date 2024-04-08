@@ -35,19 +35,17 @@ public class ReservationController {
      * Constructor for ReservationController.
      *
      * @param reservationServices The service for handling Reservation-related operations.
-     * @param personRepository
+     * @param personRepository    The repository for accessing person data.
      */
     public ReservationController(ReservationServices reservationServices, PersonRepository personRepository) {
         this.reservationServices = reservationServices;
         this.personRepository = personRepository;
     }
 
-
-
     /**
      * Retrieves a list of all reservations.
      *
-     * @return ResponseEntity containing the list of ReservationDTOs and HttpStatus OK.
+     * @return ModelAndView containing the list of ReservationDTOs and reservations view.
      */
     @GetMapping("/all")
     public ModelAndView getReservations() {
@@ -57,13 +55,19 @@ public class ReservationController {
         return modelAndView;
     }
 
+    /**
+     * Retrieves a list of reservations for the authenticated user.
+     *
+     * @param request The HTTP servlet request.
+     * @return ModelAndView containing the list of ReservationDTOs and userReservations view.
+     */
     @GetMapping("/userReservations")
-    public ModelAndView getReservationsUser( HttpServletRequest request) {
+    public ModelAndView getReservationsUser(HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
-        List<ReservationDTO> reservations = reservationServices.findReservationsByPerson(authenticatedPerson.getId());
+        List<ReservationDTO> reservations = reservationServices.findReservations();
         List<ReservationDTO> newReservations = new ArrayList<>();
-        for(ReservationDTO reservationDTO: reservations){
-            if(reservationDTO.getPerson().getId().equals(authenticatedPerson.getId())){
+        for (ReservationDTO reservationDTO : reservations) {
+            if (reservationDTO.getPerson().getId().equals(authenticatedPerson.getId())) {
                 newReservations.add(reservationDTO);
             }
         }
@@ -88,8 +92,14 @@ public class ReservationController {
         }
     }
 
+    /**
+     * Retrieves the edit reservation view with data pre-populated for editing.
+     *
+     * @param id The UUID of the reservation to edit.
+     * @return ModelAndView containing the editReservations view with pre-populated data.
+     */
     @GetMapping("/edit/{id}")
-    public ModelAndView edit(@PathVariable("id") UUID id){
+    public ModelAndView edit(@PathVariable("id") UUID id) {
         ReservationDTO reservation = reservationServices.findReservationsById(id);
         PersonDTO person = reservation.getPerson();
         List<RoomsDTO> rooms = reservation.getRooms();
@@ -102,13 +112,18 @@ public class ReservationController {
         return modelAndView;
     }
 
+    /**
+     * Retrieves the create reservation view.
+     *
+     * @return ModelAndView containing the createReservations view with necessary data.
+     */
     @GetMapping("/createReservations")
     public ModelAndView create() {
         List<ReservationDTO> reservation = reservationServices.findReservations();
         List<RoomsDTO> rooms = reservationServices.findAllRooms();
-        List<PersonDTO> persons = reservationServices.findAllPersons(); // Fetch all persons from the repository
+        List<PersonDTO> persons = reservationServices.findAllPersons();
         ModelAndView modelAndView = new ModelAndView("createReservations");
-        modelAndView.addObject("persons", persons); // Add the list of persons to the model
+        modelAndView.addObject("persons", persons);
         modelAndView.addObject("rooms", rooms);
         modelAndView.addObject("reservation", reservation);
         return modelAndView;
@@ -118,14 +133,17 @@ public class ReservationController {
      * Inserts a new reservation into the database.
      *
      * @param reservationDTO The ReservationDTO object to be inserted.
-     * @return ResponseEntity containing the generated UUID for the newly inserted reservation and HttpStatus CREATED,
-     * or HttpStatus.BAD_REQUEST if insertion fails.
+     * @param idPerson       The UUID of the person making the reservation.
+     * @param idRooms        The UUIDs of the rooms booked in the reservation.
+     * @return ModelAndView for redirecting to the reservations/all page after insertion.
      */
     @PostMapping("/create")
-    public ModelAndView insertReservation(@ModelAttribute ReservationDTO reservationDTO, @RequestParam("personId") UUID idPerson, @RequestParam("roomIds") List<UUID> idRooms) {
+    public ModelAndView insertReservation(@ModelAttribute ReservationDTO reservationDTO,
+                                          @RequestParam("personId") UUID idPerson,
+                                          @RequestParam("roomIds") List<UUID> idRooms) {
         PersonDTO personDTO = reservationServices.findPersonByIdInReservation(idPerson);
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
-        for(UUID roomId : idRooms){
+        for (UUID roomId : idRooms) {
             RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
             roomsDTOs.add(roomsDTO);
         }
@@ -137,16 +155,26 @@ public class ReservationController {
         return modelAndView;
     }
 
+    /**
+     * Inserts a new reservation for the authenticated user into the database.
+     *
+     * @param reservationDTO The ReservationDTO object to be inserted.
+     * @param idRooms        The UUIDs of the rooms booked in the reservation.
+     * @param startDate      The start date of the reservation.
+     * @param endDate        The end date of the reservation.
+     * @param request        The HTTP servlet request.
+     * @return ModelAndView for redirecting to the reservations/userReservations page after insertion.
+     */
     @PostMapping("/createReservationUser")
     public ModelAndView insertReservationUser(@ModelAttribute ReservationDTO reservationDTO,
                                               @RequestParam("roomIds") List<UUID> idRooms,
-                                              @RequestParam("startDate")LocalDate startDate,
+                                              @RequestParam("startDate") LocalDate startDate,
                                               @RequestParam("endDate") LocalDate endDate,
-                                              HttpServletRequest request){
+                                              HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         PersonDTO personDTO = reservationServices.findPersonByIdInReservation(authenticatedPerson.getId());
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
-        for(UUID roomId : idRooms){
+        for (UUID roomId : idRooms) {
             RoomsDTO roomsDTO = reservationServices.findRoomByIdInReservation(roomId);
             roomsDTOs.add(roomsDTO);
         }
@@ -158,18 +186,22 @@ public class ReservationController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/reservations/userReservations");
         return modelAndView;
-
-
     }
+
     /**
      * Updates an existing reservation in the database.
      *
+     * @param id            The UUID of the reservation to be updated.
      * @param reservationDTO The updated ReservationDTO object.
-     * @return ResponseEntity with a success message and HttpStatus OK if update is successful,
-     * or HttpStatus.NOT_FOUND if the reservation is not found.
+     * @param idRooms       The UUIDs of the rooms to be updated in the reservation.
+     * @param request       The HTTP servlet request.
+     * @return ModelAndView for redirecting to the appropriate page based on the role after update.
      */
     @PostMapping("/edit/{id}")
-    public ModelAndView updateReservation(@PathVariable("id") UUID id, @ModelAttribute("reservationDTO") ReservationDTO reservationDTO, @RequestParam("roomIds") List<UUID> idRooms, HttpServletRequest request) {
+    public ModelAndView updateReservation(@PathVariable("id") UUID id,
+                                          @ModelAttribute("reservationDTO") ReservationDTO reservationDTO,
+                                          @RequestParam("roomIds") List<UUID> idRooms,
+                                          HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         reservationDTO.setReservationId(id);
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
@@ -182,44 +214,38 @@ public class ReservationController {
         ModelAndView modelAndView = new ModelAndView();
         if (updatedReservationDTO != null) {
             modelAndView.addObject("message", "Reservation with the id = " + reservationDTO.getReservationId() + " was successfully updated.");
-            if(authenticatedPerson.getRole()== RoleType.ADMIN){
-                modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
-            }else if(authenticatedPerson.getRole() == RoleType.CLIENT){
+            if (authenticatedPerson.getRole() == RoleType.ADMIN) {
+                modelAndView.setViewName("redirect:/reservations/all");
+            } else if (authenticatedPerson.getRole() == RoleType.CLIENT) {
                 modelAndView.setViewName("redirect:/reservations/userReservations");
-            }else{
+            } else {
                 modelAndView.setViewName("redirect:/errorPage");
             }
-
         } else {
             modelAndView.setViewName("redirect:/errorPage");
         }
         return modelAndView;
     }
 
-
-
     /**
      * Deletes a reservation from the database.
      *
-     * @param id The UUID of the reservation to be deleted.
-     * @return ResponseEntity with a success message and HttpStatus OK if deletion is successful,
-     * or HttpStatus.NOT_FOUND if the reservation is not found.
+     * @param id      The UUID of the reservation to be deleted.
+     * @param request The HTTP servlet request.
+     * @return ModelAndView for redirecting to the appropriate page based on the role after deletion.
      */
     @PostMapping("/delete/{id}")
     public ModelAndView deleteReservation(@PathVariable("id") UUID id, HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         reservationServices.deleteReservations(id);
         ModelAndView modelAndView = new ModelAndView();
-        if(authenticatedPerson.getRole()== RoleType.ADMIN){
-            modelAndView.setViewName("redirect:/reservations/all"); // Set the name of the success view
-        }else if(authenticatedPerson.getRole() == RoleType.CLIENT){
+        if (authenticatedPerson.getRole() == RoleType.ADMIN) {
+            modelAndView.setViewName("redirect:/reservations/all");
+        } else if (authenticatedPerson.getRole() == RoleType.CLIENT) {
             modelAndView.setViewName("redirect:/reservations/userReservations");
-        }else{
+        } else {
             modelAndView.setViewName("redirect:/errorPage");
         }
         return modelAndView;
     }
-
-
-
 }

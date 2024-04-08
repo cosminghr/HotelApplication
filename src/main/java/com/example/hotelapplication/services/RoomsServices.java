@@ -36,7 +36,7 @@ public class RoomsServices {
      *
      * @param roomsRepository       The repository for Rooms entities.
      * @param reservationRepository The repository for Reservation entities.
-     * @param servicesRepository
+     * @param servicesRepository   The repository for Services entities.
      */
     public RoomsServices(RoomsRepository roomsRepository, ReservationRepository reservationRepository, ServicesRepository servicesRepository) {
         this.roomsRepository = roomsRepository;
@@ -73,6 +73,11 @@ public class RoomsServices {
         }
     }
 
+    /**
+     * Retrieves a list of all services.
+     *
+     * @return List of ServicesDTO objects.
+     */
     public List<ServicesDTO> findAllServices() {
         List<Services> services = servicesRepository.findAll();
         return services.stream()
@@ -80,6 +85,12 @@ public class RoomsServices {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Finds a service by its ID within a room.
+     *
+     * @param id The UUID of the service to find.
+     * @return The ServicesDTO object representing the service, or null if not found.
+     */
     public ServicesDTO findServiceByIdInRoom(UUID id) {
         Optional<Services> optionalServices = servicesRepository.findById(id);
         if (optionalServices.isPresent()) {
@@ -99,17 +110,17 @@ public class RoomsServices {
      */
     public UUID insertRooms(RoomsDTO roomsDTO) {
         List<ServicesDTO> servicesDTOS = roomsDTO.getServices();
-        if(servicesDTOS.isEmpty()){
+        if (servicesDTOS.isEmpty()) {
             return null;
         }
 
         List<ServicesDTO> servicesForRes = new ArrayList<>();
-        for(ServicesDTO servicesDTO: servicesDTOS){
+        for (ServicesDTO servicesDTO : servicesDTOS) {
             Optional<Services> servicesOptional = servicesRepository.findById(servicesDTO.getServiceId());
-            if(servicesOptional.isEmpty()){
+            if (servicesOptional.isEmpty()) {
                 return null;
             }
-            if(servicesDTO.getRooms() == null){
+            if (servicesDTO.getRooms() == null) {
                 servicesDTO.setRooms(new ArrayList<>());
             }
             servicesForRes.add(servicesDTO);
@@ -132,7 +143,6 @@ public class RoomsServices {
      * @return The updated RoomsDTO object if update is successful, otherwise null.
      */
     public RoomsDTO updateRooms(RoomsDTO roomsDTO) {
-        System.out.println(roomsDTO.toString());
         Optional<Rooms> optionalRooms = roomsRepository.findById(roomsDTO.getRoomId());
         if (optionalRooms.isPresent()) {
             Rooms existingRoom = optionalRooms.get();
@@ -143,7 +153,6 @@ public class RoomsServices {
             existingRoom.setRoomType(roomsDTO.getRoomType());
             existingRoom.setRoomRate(roomsDTO.getRoomRate());
             existingRoom.setRoomImagePath(roomsDTO.getRoomImagePath());
-
 
             // Update the list of services
             List<Services> updatedServices = new ArrayList<>();
@@ -165,14 +174,11 @@ public class RoomsServices {
         }
     }
 
-
-
     /**
      * Deletes a room from the database based on the provided UUID.
      *
      * @param id The UUID of the room to be deleted.
      */
-
     @Transactional
     public void deleteRooms(UUID id) {
         Optional<Rooms> optionalRooms = roomsRepository.findById(id);
@@ -183,5 +189,4 @@ public class RoomsServices {
             roomsRepository.delete(room);
         }
     }
-
 }

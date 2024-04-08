@@ -361,6 +361,10 @@ h1{
     color: white;
 }
 
+.rooms a{
+    outline: none;
+}
+
 .rooms image{
     height: 100%;
     width: 100%;

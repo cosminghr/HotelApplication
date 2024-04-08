@@ -1,0 +1,72 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppis", sans-serif;
+}
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background:url("imagesLogin/login.png") no-repeat;
+    background-size: cover;
+    overflow: auto;
+}
+
+.container {
+    background: url("imagesLogin/login.png") no-repeat;
+    background-size: cover;
+    overflow: auto;
+}
+
+.reservation-container {
+    width: 100%;
+    max-width: 800px; /* Adjust the width as needed */
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.8); /* Add transparency to the background */
+    backdrop-filter: blur(20px); /* Apply blur effect */
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.reservation-container h1 {
+    font-size: 36px;
+    text-align: center;
+    color: black; /* Set text color */
+}
+
+.table {
+    background-color: transparent; /* Make the table background transparent */
+}
+
+.table th,
+.table td {
+    color: black; /* Set text color */
+}
+
+.create-btn,
+.edit-btn {
+    border: none;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.create-btn {
+    background-color: black;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.edit-btn {
+    background-color: #333; /* Change edit button background color */
+    color: white;
+}
+
+.create-btn:hover,
+.edit-btn:hover {
+    opacity: 0.9; /* Reduce opacity on hover */
+}

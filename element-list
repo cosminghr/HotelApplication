@@ -3,5 +3,6 @@ com.example.hotelapplication.controllers
 com.example.hotelapplication.dtos
 com.example.hotelapplication.dtos.builders
 com.example.hotelapplication.entities
+com.example.hotelapplication.enums
 com.example.hotelapplication.repositories
 com.example.hotelapplication.services

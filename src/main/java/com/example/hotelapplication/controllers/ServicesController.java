@@ -1,9 +1,6 @@
 package com.example.hotelapplication.controllers;
 
-import com.example.hotelapplication.dtos.ReservationDTO;
-import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.ServicesDTO;
-import com.example.hotelapplication.repositories.RoomsRepository;
 import com.example.hotelapplication.services.ServicesServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
-
 
 /**
  * Controller class for handling Services-related operations.
@@ -41,7 +36,7 @@ public class ServicesController {
     /**
      * Retrieves a list of ServicesDTO objects representing all services.
      *
-     * @return ResponseEntity containing the list of ServicesDTOs and HttpStatus OK.
+     * @return ModelAndView containing the list of ServicesDTOs and services view.
      */
     @GetMapping(value = "/all")
     public ModelAndView getServices() {
@@ -68,11 +63,23 @@ public class ServicesController {
     }
 
 
+    /**
+     * Retrieves the create service view.
+     *
+     * @return ModelAndView containing the createServices view.
+     */
     @GetMapping("/createServices")
-    public ModelAndView create(){
+    public ModelAndView create() {
         ModelAndView modelAndView = new ModelAndView("createServices");
         return modelAndView;
     }
+
+    /**
+     * Inserts a new service into the database.
+     *
+     * @param servicesDTO The ServicesDTO object to be inserted.
+     * @return ModelAndView for redirecting to the services/all page after insertion.
+     */
     @PostMapping("/create")
     public ModelAndView insertService(@ModelAttribute ServicesDTO servicesDTO) {
         UUID serviceID = servicesServices.insertService(servicesDTO);
@@ -81,14 +88,27 @@ public class ServicesController {
         return modelAndView;
     }
 
+    /**
+     * Retrieves the edit service view with data pre-populated for editing.
+     *
+     * @param id The UUID of the service to edit.
+     * @return ModelAndView containing the editServices view with pre-populated data.
+     */
     @GetMapping("/edit/{id}")
-    public ModelAndView edit(@PathVariable("id") UUID id){
+    public ModelAndView edit(@PathVariable("id") UUID id) {
         ServicesDTO servicesDTO = servicesServices.findServiceById(id);
         ModelAndView modelAndView = new ModelAndView("editServices");
         modelAndView.addObject("service", servicesDTO);
         return modelAndView;
     }
 
+    /**
+     * Updates an existing service in the database.
+     *
+     * @param id          The UUID of the service to be updated.
+     * @param servicesDTO The updated ServicesDTO object.
+     * @return ModelAndView for redirecting to the services/all page after update.
+     */
     @PostMapping("/edit/{id}")
     public ModelAndView updateService(@PathVariable("id") UUID id, @ModelAttribute ServicesDTO servicesDTO) {
         servicesDTO.setServiceId(id);
@@ -101,7 +121,7 @@ public class ServicesController {
      * Deletes a service from the database.
      *
      * @param id The UUID of the service to be deleted.
-     * @return ResponseEntity with a success message and HttpStatus OK, or HttpStatus.NOT_FOUND if the service is not found.
+     * @return ModelAndView for redirecting to the services/all page after deletion.
      */
     @PostMapping("/delete/{id}")
     public ModelAndView deleteService(@PathVariable("id") UUID id) {
