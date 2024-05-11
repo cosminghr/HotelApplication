@@ -1,6 +1,7 @@
 package com.example.hotelapplication.controllers;
 
 import com.example.hotelapplication.dtos.PersonDTO;
+import com.example.hotelapplication.enums.RoleType;
 import com.example.hotelapplication.services.PersonServices;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -42,19 +43,28 @@ public class PersonController {
      * @return ModelAndView containing the list of PersonDTOs and the view name "person".
      */
     @GetMapping(value = "/all")
-    public ModelAndView getPersons() {
-        try {
-            List<PersonDTO> persons = personServices.findPersons();
-            ModelAndView modelAndView = new ModelAndView("person");
-            modelAndView.addObject("persons", persons);
+    public ModelAndView getPersons(HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
+        if(person.getRole().equals(RoleType.ADMIN)){
+            try {
+                List<PersonDTO> persons = personServices.findPersons();
+                ModelAndView modelAndView = new ModelAndView("person");
+                modelAndView.addObject("persons", persons);
+                return modelAndView;
+            } catch (MethodArgumentTypeMismatchException e) {
+                // Handle invalid UUID string error
+                // Redirect to an error page or return an error response
+                ModelAndView errorModelAndView = new ModelAndView("error");
+                errorModelAndView.addObject("errorMessage", "Invalid UUID string");
+                return errorModelAndView;
+            }
+        }else{
+            System.out.println("intru aici");
+            ModelAndView modelAndView = new ModelAndView("errorPage");
             return modelAndView;
-        } catch (MethodArgumentTypeMismatchException e) {
-            // Handle invalid UUID string error
-            // Redirect to an error page or return an error response
-            ModelAndView errorModelAndView = new ModelAndView("error");
-            errorModelAndView.addObject("errorMessage", "Invalid UUID string");
-            return errorModelAndView;
         }
+
     }
 
     /**
@@ -79,11 +89,17 @@ public class PersonController {
      * @return ModelAndView representing the edit person view.
      */
     @GetMapping("/edit/{id}")
-    public ModelAndView edit(@PathVariable("id") UUID id) {
-        PersonDTO person = personServices.findPersonById(id);
-        ModelAndView modelAndView = new ModelAndView("editPerson");
-        modelAndView.addObject("person", person);
-        return modelAndView;
+    public ModelAndView edit(@PathVariable("id") UUID id, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
+
+            PersonDTO personEdited = personServices.findPersonById(id);
+            ModelAndView modelAndView = new ModelAndView("editPerson");
+            modelAndView.addObject("person", personEdited);
+            return modelAndView;
+
+
+
     }
 
     /**
@@ -118,15 +134,24 @@ public class PersonController {
      * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/create")
-    public ModelAndView insertPerson(@ModelAttribute PersonDTO personDTO) {
-        try{
-            personServices.insertPerson(personDTO);
-            ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("redirect:/person/all");
-            return modelAndView;
-        }catch(DataIntegrityViolationException e){
-            ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("errorPage");
+    public ModelAndView insertPerson(@ModelAttribute PersonDTO personDTO, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
+        if(person.getRole().equals(RoleType.ADMIN)){
+            try{
+                personServices.insertPerson(personDTO);
+                ModelAndView modelAndView = new ModelAndView();
+                modelAndView.setViewName("redirect:/person/all");
+                return modelAndView;
+            }catch(DataIntegrityViolationException e){
+                ModelAndView modelAndView = new ModelAndView();
+                modelAndView.setViewName("errorPage");
+                return modelAndView;
+            }
+
+        }else{
+            System.out.println("intru aici");
+            ModelAndView modelAndView = new ModelAndView("errorPage");
             return modelAndView;
         }
 
@@ -140,12 +165,21 @@ public class PersonController {
      * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/edit/{id}")
-    public ModelAndView updatePerson(@PathVariable("id") UUID id, @ModelAttribute PersonDTO personDTO) {
-        personDTO.setId(id);
-        PersonDTO updatedPersonDTO = personServices.updatePerson(personDTO);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("redirect:/person/all");
-        return modelAndView;
+    public ModelAndView updatePerson(@PathVariable("id") UUID id, @ModelAttribute PersonDTO personDTO, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
+            personDTO.setId(id);
+            PersonDTO updatedPersonDTO = personServices.updatePerson(personDTO);
+            ModelAndView modelAndView = new ModelAndView();
+            if(person.getRole().equals(RoleType.ADMIN)){
+                modelAndView.setViewName("redirect:/person/all");
+            }if(person.getRole().equals(RoleType.CLIENT)){
+                modelAndView.setViewName("redirect:/person/userProfile");
+        }
+
+            return modelAndView;
+
+
     }
 
     /**
@@ -155,10 +189,19 @@ public class PersonController {
      * @return ModelAndView for redirecting to the list of all persons.
      */
     @PostMapping("/delete/{id}")
-    public ModelAndView deletePerson(@PathVariable("id") UUID id) {
-        personServices.deletePerson(id);
+    public ModelAndView deletePerson(@PathVariable("id") UUID id, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("redirect:/person/all");
+        if(person.getRole().equals(RoleType.ADMIN)){
+            modelAndView.setViewName("redirect:/person/all");
+        }if(person.getRole().equals(RoleType.CLIENT)){
+            modelAndView.setViewName("redirect:/");
+        }
+        personServices.deletePerson(id);
+
+
+
         return modelAndView;
     }
 }

@@ -12,4 +12,7 @@ public class RoomsConstants {
     public static final String ROOM_UPDATED="Room with id {} was updated in db.";
     public static final String ROOM_NOT_UPDATED="Room with id {} not found. Update operation aborted.";
 
+    public static final String REVIEW_FOUND="Review with id {} was found in db";
+    public static final String REVIEW_NOT_FOUND="Review with id {} was not found in db";
+
 }

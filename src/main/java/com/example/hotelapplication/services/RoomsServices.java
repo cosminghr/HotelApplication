@@ -1,13 +1,17 @@
 package com.example.hotelapplication.services;
 
+import com.example.hotelapplication.dtos.ReviewDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.dtos.ServicesDTO;
+import com.example.hotelapplication.dtos.builders.ReviewBuilder;
 import com.example.hotelapplication.dtos.builders.RoomsBuilder;
 import com.example.hotelapplication.dtos.builders.ServicesBuilder;
 import com.example.hotelapplication.entities.Reservation;
+import com.example.hotelapplication.entities.Review;
 import com.example.hotelapplication.entities.Rooms;
 import com.example.hotelapplication.entities.Services;
 import com.example.hotelapplication.repositories.ReservationRepository;
+import com.example.hotelapplication.repositories.ReviewRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
 import com.example.hotelapplication.repositories.ServicesRepository;
 import jakarta.transaction.Transactional;
@@ -29,6 +33,7 @@ import static com.example.hotelapplication.constants.RoomsConstants.*;
 @Service
 public class RoomsServices {
     private final RoomsRepository roomsRepository;
+    private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
     private final ServicesRepository servicesRepository;
     private static final Logger LOGGER = LoggerFactory.getLogger(RoomsServices.class);
@@ -37,11 +42,13 @@ public class RoomsServices {
      * Constructor for RoomsServices.
      *
      * @param roomsRepository       The repository for Rooms entities.
+     * @param reviewRepository
      * @param reservationRepository The repository for Reservation entities.
-     * @param servicesRepository   The repository for Services entities.
+     * @param servicesRepository    The repository for Services entities.
      */
-    public RoomsServices(RoomsRepository roomsRepository, ReservationRepository reservationRepository, ServicesRepository servicesRepository) {
+    public RoomsServices(RoomsRepository roomsRepository, ReviewRepository reviewRepository, ReservationRepository reservationRepository, ServicesRepository servicesRepository) {
         this.roomsRepository = roomsRepository;
+        this.reviewRepository = reviewRepository;
         this.reservationRepository = reservationRepository;
         this.servicesRepository = servicesRepository;
     }
@@ -104,6 +111,17 @@ public class RoomsServices {
         }
     }
 
+    public ReviewDTO findReviewsOfTheRoom(UUID id){
+        Optional<Review> optionalReview = reviewRepository.findById(id);
+        if(optionalReview.isPresent()){
+            LOGGER.info(REVIEW_FOUND, id);
+            return ReviewBuilder.etoReviewDTO(optionalReview.get());
+        }else{
+            LOGGER.error(REVIEW_NOT_FOUND, id);
+            return null;
+        }
+    }
+
     /**
      * Inserts a new room into the database.
      *
@@ -153,7 +171,6 @@ public class RoomsServices {
             existingRoom.setRoomNumber(roomsDTO.getRoomNumber());
             existingRoom.setRoomCost(roomsDTO.getRoomCost());
             existingRoom.setRoomType(roomsDTO.getRoomType());
-            existingRoom.setRoomRate(roomsDTO.getRoomRate());
             existingRoom.setRoomImagePath(roomsDTO.getRoomImagePath());
 
             // Update the list of services

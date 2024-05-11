@@ -27,6 +27,7 @@ public class Rooms {
     private int roomCapacity;
     @Column(name = "roomRate", nullable = false)
     private double roomRate;
+
     @Column(name = "roomDescription", nullable = false)
     private String roomDescription;
     @Column(name = "roomCost", nullable = false)
@@ -42,7 +43,7 @@ public class Rooms {
                inverseJoinColumns = @JoinColumn(name = "serviceId"))
     private List<Services> services;
 
-
-
+    @OneToMany(mappedBy = "room", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<Review> reviews;
 
 }

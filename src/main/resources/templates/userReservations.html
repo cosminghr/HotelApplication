@@ -64,6 +64,9 @@
         <div>
           <a class="btn btn-primary edit-btn" th:href="@{'/reservations/edit/' + ${reservation.reservationId}}">Edit</a>
         </div>
+        <div>
+          <a class="btn btn-success payment-btn" th:href="@{'/reservations/pay/' + ${reservation.reservationId}}">Pay</a>
+        </div>
       </td>
     </tr>
     </tbody>

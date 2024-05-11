@@ -38,4 +38,7 @@ public class Person {
 
    @OneToMany(mappedBy = "person", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
    private List<Reservation> reservations;
+
+   @OneToMany(mappedBy = "person", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<Review> reviews;
 }
