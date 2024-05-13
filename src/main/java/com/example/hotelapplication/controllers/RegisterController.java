@@ -2,6 +2,7 @@ package com.example.hotelapplication.controllers;
 
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.enums.RoleType;
+import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.services.PersonServices;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -67,18 +68,21 @@ public class RegisterController {
         personDTO.setAddress(address);
         personDTO.setDate(date);
         personDTO.setRole(RoleType.CLIENT); // Set the role to CLIENT
+
         try{
             UUID personId = personServices.insertPerson(personDTO);
             ModelAndView modelAndView = new ModelAndView();
             modelAndView.setViewName("redirect:/");
+            personServices.sendEmailToUser(personDTO, "Register Completed", "You have successfully registered to Mountain Hotel!");
             return modelAndView;
         }catch (Exception e){
-
             ModelAndView modelAndView = new ModelAndView();
-            modelAndView.setViewName("errorPage");
+            modelAndView.setViewName("redirect:/");
             return modelAndView;
         }
         // Insert the person into the database
 
     }
+
+
 }

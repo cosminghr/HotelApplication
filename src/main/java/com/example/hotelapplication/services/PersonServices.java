@@ -1,21 +1,25 @@
 package com.example.hotelapplication.services;
 
+import com.example.hotelapplication.dtos.EmailDTO;
+import com.example.hotelapplication.dtos.EmailUserDTO;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.builders.PersonBuilder;
 import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
+import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
 import jakarta.transaction.TransactionScoped;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,6 +33,7 @@ public class PersonServices {
     private final PersonRepository personRepository;
     private final ReservationRepository reservationRepository;
     private final RoomsRepository roomsRepository;
+    private final RestTemplate restTemplate;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonServices.class);
 
@@ -38,11 +43,13 @@ public class PersonServices {
      * @param personRepository      The repository for Person entities.
      * @param reservationRepository The repository for Reservation entities.
      * @param roomsRepository       The repository for Rooms entities.
+     * @param restTemplate
      */
-    public PersonServices(PersonRepository personRepository, ReservationRepository reservationRepository, RoomsRepository roomsRepository) {
+    public PersonServices(PersonRepository personRepository, ReservationRepository reservationRepository, RoomsRepository roomsRepository, RestTemplate restTemplate) {
         this.personRepository = personRepository;
         this.reservationRepository = reservationRepository;
         this.roomsRepository = roomsRepository;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -196,6 +203,32 @@ public class PersonServices {
         } else {
             // If the person is not found, log a message
             LOGGER.info(PERSON_NOT_DELETE, id);
+        }
+    }
+
+    public void sendEmailToUser(PersonDTO personDTO, String emailTitle, String emailDescription) throws EmailSendingException {
+
+        EmailUserDTO emailDTO = new EmailUserDTO();
+        emailDTO.setEmailTo(personDTO.getEmail());
+        emailDTO.setEmailFrom("ghermancosmin112@gmail.com");
+        emailDTO.setName(personDTO.getName());
+        emailDTO.setTitle(emailTitle);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<EmailUserDTO> requestEntity = new HttpEntity<>(emailDTO, headers);
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(
+                "http://localhost:8081/emails/sending-email",
+                HttpMethod.POST,
+                requestEntity,
+                Boolean.class
+        );
+        System.out.println("dadadadaadad"+responseEntity.getStatusCode());
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            System.out.println("Email-ul a fost trimis cu succes!");
+        } else {
+            throw new EmailSendingException("Eroare la trimiterea email-ului!");
         }
     }
 }

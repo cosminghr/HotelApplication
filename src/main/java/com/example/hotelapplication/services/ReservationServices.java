@@ -1,5 +1,7 @@
 package com.example.hotelapplication.services;
+import com.example.hotelapplication.config.EmailProducer;
 import com.example.hotelapplication.constants.*;
+import com.example.hotelapplication.dtos.EmailDTO;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
@@ -9,14 +11,21 @@ import com.example.hotelapplication.dtos.builders.RoomsBuilder;
 import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
+import com.example.hotelapplication.enums.StatusEmail;
+import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +41,10 @@ public class ReservationServices {
     private final ReservationRepository reservationRepository;
     private final PersonRepository personRepository;
     private final RoomsRepository roomsRepository;
+    private final EmailProducer emailProducer;
+    private JavaMailSender javaMailSender;
+
+    private final RestTemplate restTemplate;
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationServices.class);
 
     /**
@@ -40,11 +53,16 @@ public class ReservationServices {
      * @param reservationRepository The repository for Reservation entities.
      * @param personRepository      The repository for Person entities.
      * @param roomsRepository       The repository for Rooms entities.
+     * @param emailProducer
+     * @param restTemplate
      */
-    public ReservationServices(ReservationRepository reservationRepository, PersonRepository personRepository, RoomsRepository roomsRepository) {
+    public ReservationServices(ReservationRepository reservationRepository, PersonRepository personRepository, RoomsRepository roomsRepository, EmailProducer emailProducer, RestTemplate restTemplate) {
         this.reservationRepository = reservationRepository;
         this.personRepository = personRepository;
         this.roomsRepository = roomsRepository;
+
+        this.emailProducer = emailProducer;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -219,8 +237,82 @@ public class ReservationServices {
         reservation = reservationRepository.save(reservation);
 
         LOGGER.info(RESERVATION_INSERT, reservation.getReservationId());
+
+
         return reservation.getReservationId();
+
     }
+
+
+
+
+    public void emailCompose(ReservationDTO reservationDTO) throws JsonProcessingException, EmailSendingException {
+        EmailDTO emailRequest = new EmailDTO();
+        emailRequest.setId(reservationDTO.getPerson().getId());
+        emailRequest.setName(reservationDTO.getPerson().getName());
+        emailRequest.setOwnerRef("MountainHotel");
+        emailRequest.setEmailFrom("ghermancosmin112@gmail.com");
+        emailRequest.setStartDate(reservationDTO.getReservationStart());
+        emailRequest.setEndDate(reservationDTO.getReservationEnd());
+        emailRequest.setEmailTo(reservationDTO.getPerson().getEmail());
+        emailRequest.setTitle("Reservation Confirmed!");
+        emailRequest.setReservationId(reservationDTO.getReservationId());
+        emailRequest.setReservationCost(reservationDTO.getReservationFinalCost());
+        emailRequest.setEmailDate(LocalDateTime.now());
+        emailRequest.setEmailStatus(StatusEmail.IN_PROGRESS);
+        List<Integer> roomNumbers = new ArrayList<>();
+        for(RoomsDTO roomsDTO : reservationDTO.getRooms()){
+            roomNumbers.add(roomsDTO.getRoomNumber());
+        }
+        String roomNString = roomNumbers.toString();
+        emailRequest.setRoomNumbers(roomNString);
+   /*     StringBuilder mailCompose = new StringBuilder();
+
+        mailCompose.append("<h1>Dear, ").append(reservationDTO.getPerson().getName()).append("</h1><br>");
+        mailCompose.append("<h1>Your reservation with the id: ").append(reservationDTO.getReservationId()).append(" was successfully created.</h1><br>");
+        mailCompose.append("<h1> You can see above some informations about your trip with us: </h1><br>");
+        mailCompose.append("<h1>Name: ").append(reservationDTO.getPerson().getName()).append("</h1><br>");
+        mailCompose.append("<h1>Email: ").append(reservationDTO.getPerson().getEmail()).append("</h1><br>");
+        mailCompose.append("<h1>Start Date: ").append(reservationDTO.getReservationStart()).append("</h1><br>");
+        mailCompose.append("<h1>End Date: ").append(reservationDTO.getReservationEnd()).append("</h1><br>");
+        mailCompose.append("<h1>Room Numbers: ").append(roomNumbers).append("</h1><br>");
+        mailCompose.append("<h1>Final Cost: ").append(reservationDTO.getReservationFinalCost()).append("</h1><br>");
+        mailCompose.append("<h1>Thanks for choosing us! See you soon!</h1><br>");
+        System.out.println(mailCompose.toString());
+
+        emailRequest.setDescription(mailCompose.toString());*/
+        emailProducer.sendMessage(emailRequest);
+
+
+
+    }
+
+    public void sendEmailToUser(PersonDTO personDTO, String emailTitle, String emailDescription) throws EmailSendingException {
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setEmailTo(personDTO.getEmail());
+        emailDTO.setEmailFrom("ghermancosmin112@gmail.com");
+        emailDTO.setTitle(emailTitle);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<EmailDTO> requestEntity = new HttpEntity<>(emailDTO, headers);
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(
+                "http://localhost:8081/emails/sending-email",
+                HttpMethod.POST,
+                requestEntity,
+                Boolean.class
+        );
+
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            System.out.println("Email-ul a fost trimis cu succes!");
+        } else {
+            throw new EmailSendingException("Eroare la trimiterea email-ului!");
+        }
+    }
+
+
 
 
     /**

@@ -3,10 +3,12 @@ package com.example.hotelapplication.controllers;
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.dtos.ReservationDTO;
 import com.example.hotelapplication.dtos.RoomsDTO;
-import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.enums.RoleType;
+import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.services.ReservationServices;
+import com.example.hotelapplication.services.fileGenerator.PDFFileGeneratorStrategyClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +20,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -29,13 +30,15 @@ import java.util.UUID;
 public class ReservationController {
     private final ReservationServices reservationServices;
     private final PersonRepository personRepository;
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationController.class);
 
     /**
      * Constructor for ReservationController.
      *
-     * @param reservationServices The service for handling Reservation-related operations.
-     * @param personRepository    The repository for accessing person data.
+     * @param reservationServices            The service for handling Reservation-related operations.
+     * @param personRepository               The repository for accessing person data.
      */
     public ReservationController(ReservationServices reservationServices, PersonRepository personRepository) {
         this.reservationServices = reservationServices;
@@ -62,7 +65,7 @@ public class ReservationController {
      * @return ModelAndView containing the list of ReservationDTOs and userReservations view.
      */
     @GetMapping("/userReservations")
-    public ModelAndView getReservationsUser(HttpServletRequest request) {
+    public ModelAndView getReservationsUser( HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         List<ReservationDTO> reservations = reservationServices.findReservations();
         List<ReservationDTO> newReservations = new ArrayList<>();
@@ -71,10 +74,17 @@ public class ReservationController {
                 newReservations.add(reservationDTO);
             }
         }
-        ModelAndView modelAndView = new ModelAndView("userReservations");
-        modelAndView.addObject("reservations", newReservations);
-        return modelAndView;
+        if(authenticatedPerson.getRole().equals(RoleType.ADMIN)){
+            ModelAndView modelAndView = new ModelAndView("errorPage");
+            return modelAndView;
+        }else{
+            ModelAndView modelAndView = new ModelAndView("userReservations");
+            modelAndView.addObject("reservations", newReservations);
+            return modelAndView;
+        }
     }
+
+
 
     /**
      * Retrieves a specific reservation by ID.
@@ -140,7 +150,7 @@ public class ReservationController {
     @PostMapping("/create")
     public ModelAndView insertReservation(@ModelAttribute ReservationDTO reservationDTO,
                                           @RequestParam("personId") UUID idPerson,
-                                          @RequestParam("roomIds") List<UUID> idRooms) {
+                                          @RequestParam("roomIds") List<UUID> idRooms) throws JsonProcessingException, EmailSendingException {
         PersonDTO personDTO = reservationServices.findPersonByIdInReservation(idPerson);
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
         for (UUID roomId : idRooms) {
@@ -149,9 +159,11 @@ public class ReservationController {
         }
         reservationDTO.setRooms(roomsDTOs);
         reservationDTO.setPerson(personDTO);
-        reservationServices.insertReservations(reservationDTO);
+        UUID reservationId = reservationServices.insertReservations(reservationDTO);
+        reservationDTO.setReservationId(reservationId);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/reservations/all");
+        reservationServices.emailCompose(reservationDTO);
         return modelAndView;
     }
 
@@ -249,4 +261,5 @@ public class ReservationController {
         }
         return modelAndView;
     }
+
 }

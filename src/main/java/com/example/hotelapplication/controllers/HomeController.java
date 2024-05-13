@@ -5,6 +5,7 @@ import com.example.hotelapplication.dtos.RoomsDTO;
 import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.services.RoomsServices;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,8 @@ public class HomeController {
      * @return A ModelAndView object representing the home page view.
      */
     @GetMapping("/{id}")
-    public ModelAndView home(@PathVariable("id") UUID personId) {
+    public ModelAndView home(@PathVariable("id") UUID personId, HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         List<RoomsDTO> rooms = roomsServices.findRooms();
         Optional<Person> person = personRepository.findById(personId);
         ModelAndView modelAndView = new ModelAndView("redirect:/home");
