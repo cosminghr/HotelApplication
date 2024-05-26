@@ -169,6 +169,7 @@ public class RoomsServices {
             existingRoom.setRoomCapacity(roomsDTO.getRoomCapacity());
             existingRoom.setRoomDescription(roomsDTO.getRoomDescription());
             existingRoom.setRoomNumber(roomsDTO.getRoomNumber());
+            existingRoom.setRoomRate(roomsDTO.getRoomRate());
             existingRoom.setRoomCost(roomsDTO.getRoomCost());
             existingRoom.setRoomType(roomsDTO.getRoomType());
             existingRoom.setRoomImagePath(roomsDTO.getRoomImagePath());

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Room</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url("/imagesLogin/login.png") no-repeat;
+            background-size: cover;
+            overflow: hidden; /* Prevent body from scrolling */
+        }
+
+        .container {
+            width: 1700px;
+            height: 90vh; /* Fixed height for the container */
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            color: black;
+            border-radius: 12px;
+            padding: 30px 40px;
+            overflow-y: scroll; /* Enable vertical scrolling */
+        }
+
+        .container h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .room-image {
+            max-width: 500px;
+            border-right: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-details .fas.fa-star {
+            color: #ffc107; /* Yellow star color */
+        }
+
+        .room-details {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: #fff; /* White text color */
+            border-radius: 10px; /* Rounded corners */
+            margin-left: 20px; /* Add some space from the image */
+            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 80vh; /* Set maximum height to prevent overflow */
+        }
+
+        .room-details th {
+            font-weight: bold; /* Make table headers bold */
+            width: 30%; /* Adjust column width */
+        }
+
+        .room-details td {
+            padding: 5px 10px; /* Add padding to table cells */
+        }
+
+        .room-details .table {
+            background: transparent; /* Transparent table background */
+        }
+
+        .room-details .table-hover tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1); /* Transparent hover effect */
+        }
+
+        .create-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #000;
+            border: none;
+        }
+
+        .btn-danger {
+            margin-bottom: 10px;
+        }
+
+        /* Style for the room rate */
+        .rate {
+            float: left;
+            height: 46px;
+            padding: 0 10px;
+        }
+
+        .rate:not(:checked) > input {
+            position: absolute;
+            top: -9999px;
+        }
+
+        .rate:not(:checked) > label {
+            float: right;
+            width: 1em;
+            overflow: hidden;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 30px;
+            color: #ccc; /* Default star color */
+        }
+
+        .rate:not(:checked) > label:before {
+            content: '★ ';
+        }
+
+        .rate > input:checked ~ label {
+            color: #ffc700; /* Color for selected stars */
+        }
+
+        .rate:not(:checked) > label:hover,
+        .rate:not(:checked) > label:hover ~ label {
+            color: #deb217; /* Color for stars on hover */
+        }
+
+        .rate > input:checked + label:hover,
+        .rate > input:checked + label:hover ~ label,
+        .rate > input:checked ~ label:hover,
+        .rate > input:checked ~ label:hover ~ label,
+        .rate > label:hover ~ input:checked ~ label {
+            color: #c59b08; /* Color for selected stars on hover */
+        }
+
+        /* Center the Room Rate label */
+        .room-rate-label {
+            display: inline-block;
+            text-align: left;
+            width: 100%;
+        }
+
+        form .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: lime;
+            border: none;
+            outline: none;
+            border-radius: 6px;
+            font-size: 17px;
+            color: white;
+            margin-top: 5px;
+            cursor: pointer;
+            transition: 0.5s;
+        }
+
+        form .btn-primary:hover {
+            background: black;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <form id="roomForm" th:action="@{/rooms/create}" method="post">
+        <h1 class="text-center my-4">Create New Room</h1>
+
+        <div class="mb-3">
+            <label for="roomNumber" class="form-label">Room Number</label>
+            <input type="text" class="form-control" id="roomNumber" name="roomNumber"  required>
+            <div class="invalid-feedback">Room number is required</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="roomImagePath" class="form-label">Room Image</label>
+            <input type="file" class="form-control" id="roomImagePath" name="roomImagePath" accept="image/*" onchange="previewImage(event)">
+            <img id="imagePreview" src="#" alt="Room Image" style="max-width: 100%; max-height: 200px; margin-top: 10px;">
+        </div>
+
+        <div class="mb-3">
+            <label for="roomType" class="form-label">Room Type</label>
+            <!-- Dropdown menu for selecting room type -->
+            <select class="form-select" id="roomType" name="roomType" required onchange="fillRoomDetails()">
+                <option value="" selected disabled>Select Room Type</option>
+                <!-- Iterate over the RoomType enum values to populate the dropdown -->
+                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}" th:text="${type}"></option>
+            </select>
+            <div class="invalid-feedback">Room type is required</div>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="roomCapacity" class="form-label">Room Capacity</label>
+            <input type="number" class="form-control" id="roomCapacity" name="roomCapacity"  required>
+            <div class="invalid-feedback">Room capacity is required</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="room-rate-label">Room Rate</label>
+            <div class="rate">
+                <input type="radio" id="star5" name="roomRate" value="5"/>
+                <label for="star5" title="text">5 stars</label>
+                <input type="radio" id="star4" name="roomRate" value="4" />
+                <label for="star4" title="text">4 stars</label>
+                <input type="radio" id="star3" name="roomRate" value="3"/>
+                <label for="star3" title="text">3 stars</label>
+                <input type="radio" id="star2" name="roomRate" value="2" />
+                <label for="star2" title="text">2 stars</label>
+                <input type="radio" id="star1" name="roomRate" value="1" />
+                <label for="star1" title="text">1 star</label>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="roomDescription" class="room-rate-label">Room Description</label>
+            <textarea class="form-control" id="roomDescription" name="roomDescription" required></textarea>
+            <div class="invalid-feedback">Room description is required</div>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label">Select Services for the Room</label>
+            <div class="form-check">
+                <!-- Iterate over the list of services to display checkboxes -->
+                <div th:each="service : ${services}">
+                    <input class="form-check-input" type="checkbox" th:id="'service-' + ${service.serviceId}" th:value="${service.serviceId}" name="servicesIds">
+                    <label class="form-check-label" th:for="'service-' + ${service.serviceId}" th:text="${service.serviceName}"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('imagePreview');
+            output.src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function fillRoomDetails() {
+        var roomType = document.getElementById('roomType').value;
+        var roomCapacity = document.getElementById('roomCapacity');
+        var roomDescription = document.getElementById('roomDescription');
+
+        switch (roomType) {
+            case 'KING':
+                roomCapacity.value = '2';
+                roomDescription.value = 'Luxurious king-sized bed with modern amenities.';
+                break;
+            case 'QUEEN':
+                roomCapacity.value = '2';
+                roomDescription.value = 'Comfortable queen-sized bed with a cozy atmosphere.';
+                break;
+            case 'APARTMENT_KING':
+                roomCapacity.value = '4';
+                roomDescription.value = 'Spacious apartment with two king-sized beds and a living area.';
+                break;
+            case 'APARTMENT_QUEEN':
+                roomCapacity.value = '4';
+                roomDescription.value = 'Stylish apartment with two queen-sized beds and a living area.';
+                break;
+            case 'KING_DELUXE':
+                roomCapacity.value = '2';
+                roomDescription.value = 'Elegant king-sized bed with deluxe amenities and a scenic view.';
+                break;
+            case 'QUEEN_DELUXE':
+                roomCapacity.value = '2';
+                roomDescription.value = 'Deluxe queen-sized bed with luxurious amenities and a relaxing ambiance.';
+                break;
+            case 'APARTMENT_KING_DELUXE':
+                roomCapacity.value = '4';
+                roomDescription.value = 'Luxurious apartment with two king-sized beds, deluxe amenities, and a stunning view.';
+                break;
+            case 'APARTMENT_QUEEN_DELUXE':
+                roomCapacity.value = '4';
+                roomDescription.value = 'Opulent apartment with two queen-sized beds, deluxe amenities, and a serene atmosphere.';
+                break;
+        }
+    }
+
+    // Initially fill room details based on the selected room type
+    fillRoomDetails();
+</script>
+</body>
+</html>
+

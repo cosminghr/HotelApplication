@@ -41,7 +41,7 @@ public class ServicesController {
     @GetMapping(value = "/all")
     public ModelAndView getServices() {
         List<ServicesDTO> services = servicesServices.findAllServices();
-        ModelAndView modelAndView = new ModelAndView("services");
+        ModelAndView modelAndView = new ModelAndView("admin/services/services");
         modelAndView.addObject("services", services);
         return modelAndView;
     }
@@ -70,7 +70,7 @@ public class ServicesController {
      */
     @GetMapping("/createServices")
     public ModelAndView create() {
-        ModelAndView modelAndView = new ModelAndView("createServices");
+        ModelAndView modelAndView = new ModelAndView("admin/services/createServices");
         return modelAndView;
     }
 
@@ -97,7 +97,7 @@ public class ServicesController {
     @GetMapping("/edit/{id}")
     public ModelAndView edit(@PathVariable("id") UUID id) {
         ServicesDTO servicesDTO = servicesServices.findServiceById(id);
-        ModelAndView modelAndView = new ModelAndView("editServices");
+        ModelAndView modelAndView = new ModelAndView("admin/services/editServices");
         modelAndView.addObject("service", servicesDTO);
         return modelAndView;
     }

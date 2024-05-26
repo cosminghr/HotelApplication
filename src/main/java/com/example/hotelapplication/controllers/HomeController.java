@@ -65,7 +65,7 @@ public class HomeController {
      */
     @GetMapping("")
     public ModelAndView home1() {
-        ModelAndView modelAndView = new ModelAndView("home");
+        ModelAndView modelAndView = new ModelAndView("/client/home");
         List<RoomsDTO> rooms = roomsServices.findRooms();
         modelAndView.addObject("rooms", rooms); // Add the list of rooms to the model
         return modelAndView;

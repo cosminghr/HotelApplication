@@ -43,7 +43,5 @@ public class Rooms {
                inverseJoinColumns = @JoinColumn(name = "serviceId"))
     private List<Services> services;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<Review> reviews;
 
 }

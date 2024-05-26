@@ -7,7 +7,6 @@ import com.example.hotelapplication.enums.RoleType;
 import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.services.ReservationServices;
-import com.example.hotelapplication.services.fileGenerator.PDFFileGeneratorStrategyClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -53,7 +52,7 @@ public class ReservationController {
     @GetMapping("/all")
     public ModelAndView getReservations() {
         List<ReservationDTO> reservations = reservationServices.findReservations();
-        ModelAndView modelAndView = new ModelAndView("reservations");
+        ModelAndView modelAndView = new ModelAndView("/admin/reservations/reservations");
         modelAndView.addObject("reservations", reservations);
         return modelAndView;
     }
@@ -78,7 +77,7 @@ public class ReservationController {
             ModelAndView modelAndView = new ModelAndView("errorPage");
             return modelAndView;
         }else{
-            ModelAndView modelAndView = new ModelAndView("userReservations");
+            ModelAndView modelAndView = new ModelAndView("client/userReservations");
             modelAndView.addObject("reservations", newReservations);
             return modelAndView;
         }
@@ -114,7 +113,7 @@ public class ReservationController {
         PersonDTO person = reservation.getPerson();
         List<RoomsDTO> rooms = reservation.getRooms();
         List<RoomsDTO> allRooms = reservationServices.findAllRooms();
-        ModelAndView modelAndView = new ModelAndView("editReservations");
+        ModelAndView modelAndView = new ModelAndView("/admin/reservations/editReservations");
         modelAndView.addObject("reservation", reservation);
         modelAndView.addObject("rooms", rooms);
         modelAndView.addObject("person", person);
@@ -132,7 +131,7 @@ public class ReservationController {
         List<ReservationDTO> reservation = reservationServices.findReservations();
         List<RoomsDTO> rooms = reservationServices.findAllRooms();
         List<PersonDTO> persons = reservationServices.findAllPersons();
-        ModelAndView modelAndView = new ModelAndView("createReservations");
+        ModelAndView modelAndView = new ModelAndView("/admin/reservations/createReservations");
         modelAndView.addObject("persons", persons);
         modelAndView.addObject("rooms", rooms);
         modelAndView.addObject("reservation", reservation);

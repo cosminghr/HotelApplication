@@ -2,7 +2,6 @@ package com.example.hotelapplication.controllers;
 
 import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.enums.RoleType;
-import com.example.hotelapplication.exceptions.EmailSendingException;
 import com.example.hotelapplication.services.PersonServices;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +35,7 @@ public class RegisterController {
      */
     @GetMapping("/register")
     public ModelAndView registerForm() {
-        return new ModelAndView("register");
+        return new ModelAndView("login/register");
     }
 
     /**
@@ -57,7 +56,7 @@ public class RegisterController {
                                  @RequestParam LocalDate date) {
         // Validate the input data
         if (name == null || email == null || password == null || address == null || date == null) {
-            return new ModelAndView("register");
+            return new ModelAndView("/login/register");
         }
 
         // Create a new PersonDTO for registration

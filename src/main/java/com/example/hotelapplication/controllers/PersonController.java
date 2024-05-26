@@ -1,6 +1,8 @@
 package com.example.hotelapplication.controllers;
 
 import com.example.hotelapplication.dtos.PersonDTO;
+import com.example.hotelapplication.dtos.builders.PersonBuilder;
+import com.example.hotelapplication.entities.Person;
 import com.example.hotelapplication.enums.RoleType;
 import com.example.hotelapplication.services.PersonServices;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,13 +51,13 @@ public class PersonController {
         if(person.getRole().equals(RoleType.ADMIN)){
             try {
                 List<PersonDTO> persons = personServices.findPersons();
-                ModelAndView modelAndView = new ModelAndView("person");
+                ModelAndView modelAndView = new ModelAndView("/admin/persons/person");
                 modelAndView.addObject("persons", persons);
                 return modelAndView;
             } catch (MethodArgumentTypeMismatchException e) {
                 // Handle invalid UUID string error
                 // Redirect to an error page or return an error response
-                ModelAndView errorModelAndView = new ModelAndView("error");
+                ModelAndView errorModelAndView = new ModelAndView("errorPage");
                 errorModelAndView.addObject("errorMessage", "Invalid UUID string");
                 return errorModelAndView;
             }
@@ -77,7 +79,7 @@ public class PersonController {
     public ModelAndView getPersonProfile(HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
-        ModelAndView modelAndView = new ModelAndView("userProfile");
+        ModelAndView modelAndView = new ModelAndView("client/userProfile");
         modelAndView.addObject("persons", person);
         return modelAndView;
     }
@@ -94,7 +96,7 @@ public class PersonController {
         PersonDTO person = personServices.findPersonById(authenticatedPerson.getId());
 
             PersonDTO personEdited = personServices.findPersonById(id);
-            ModelAndView modelAndView = new ModelAndView("editPerson");
+            ModelAndView modelAndView = new ModelAndView("admin/persons/editPerson");
             modelAndView.addObject("person", personEdited);
             return modelAndView;
 
@@ -109,8 +111,20 @@ public class PersonController {
      */
     @GetMapping("/createPerson")
     public ModelAndView create() {
-        return new ModelAndView("createPerson");
+        return new ModelAndView("/admin/persons/createPerson");
     }
+
+    @GetMapping("/support")
+    public ModelAndView communication1() {
+        return new ModelAndView("/client/comunication");
+    }
+
+    @GetMapping("/authenticatedUser")
+    public PersonDTO getAuthenticatedUser(HttpServletRequest request) {
+        PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
+        return authenticatedPerson;
+    }
+
 
     /**
      * Retrieves a specific person by ID.

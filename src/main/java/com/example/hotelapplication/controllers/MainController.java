@@ -4,8 +4,6 @@ import com.example.hotelapplication.dtos.PersonDTO;
 import com.example.hotelapplication.enums.RoleType;
 import com.example.hotelapplication.services.PersonServices;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -39,7 +37,7 @@ public class MainController {
     @GetMapping()
     public ModelAndView home(HttpServletRequest request) {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
-        return new ModelAndView("start");
+        return new ModelAndView("/login/start");
     }
 
     /**

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Room</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url("/imagesLogin/login.png") no-repeat;
+            background-size: cover;
+            overflow: hidden; /* Prevent body from scrolling */
+        }
+
+        .container {
+            width: 1700px;
+            height: 90vh; /* Fixed height for the container */
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            color: black;
+            border-radius: 12px;
+            padding: 30px 40px;
+            overflow-y: scroll; /* Enable vertical scrolling */
+        }
+
+        .container h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .room-image {
+            max-width: 500px;
+            border-right: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-details .fas.fa-star {
+            color: #ffc107; /* Yellow star color */
+        }
+
+        .room-details {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: #fff; /* White text color */
+            border-radius: 10px; /* Rounded corners */
+            margin-left: 20px; /* Add some space from the image */
+            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 80vh; /* Set maximum height to prevent overflow */
+        }
+
+        .room-details th {
+            font-weight: bold; /* Make table headers bold */
+            width: 30%; /* Adjust column width */
+        }
+
+        .room-details td {
+            padding: 5px 10px; /* Add padding to table cells */
+        }
+
+        .room-details .table {
+            background: transparent; /* Transparent table background */
+        }
+
+        .room-details .table-hover tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1); /* Transparent hover effect */
+        }
+
+
+        /* Style for the room rate */
+        .rate {
+            float: left;
+            height: 46px;
+            padding: 0 10px;
+        }
+
+        .rate:not(:checked) > input {
+            position: absolute;
+            top: -9999px;
+        }
+
+        .rate:not(:checked) > label {
+            float: right;
+            width: 1em;
+            overflow: hidden;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 30px;
+            color: #ccc; /* Default star color */
+        }
+
+        .rate:not(:checked) > label:before {
+            content: '★ ';
+        }
+
+        .rate > input:checked ~ label {
+            color: #ffc700; /* Color for selected stars */
+        }
+
+        .rate:not(:checked) > label:hover,
+        .rate:not(:checked) > label:hover ~ label {
+            color: #deb217; /* Color for stars on hover */
+        }
+
+        .rate > input:checked + label:hover,
+        .rate > input:checked + label:hover ~ label,
+        .rate > input:checked ~ label:hover,
+        .rate > input:checked ~ label:hover ~ label,
+        .rate > label:hover ~ input:checked ~ label {
+            color: #c59b08; /* Color for selected stars on hover */
+        }
+
+        /* Center the Room Rate label */
+        .room-rate-label {
+            display: inline-block;
+            text-align: left;
+            width: 100%;
+        }
+        form .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: lime;
+            border: none;
+            outline: none;
+            border-radius: 6px;
+            font-size: 17px;
+            color: white;
+            margin-top: 5px;
+            cursor: pointer;
+            transition: 0.5s;
+        }
+
+        form .btn-primary:hover {
+            background: black;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <form th:action="@{'/rooms/edit/' + ${room.roomId}}" method="post">
+        <h1 class="text-center my-4">Edit Room</h1>
+
+        <div class="mb-3">
+            <label for="roomNumber" class="form-label">Room Number</label>
+            <input type="text" class="form-control" id="roomNumber" name="roomNumber" th:value="${room.roomNumber}" required>
+            <div class="invalid-feedback">Room number is required</div>
+        </div>
+        <div class="mb-3">
+            <label for="roomImagePath" class="form-label">Room Image</label>
+            <input type="file" class="form-control" id="roomImagePath" name="roomImagePath" accept="image/*" onchange="previewImage(event)">
+            <img id="imagePreview" src="#" alt="Room Image" style="max-width: 100%; max-height: 200px; margin-top: 10px;">
+        </div>
+
+        <div class="mb-3">
+            <label for="roomType" class="form-label">Room Type</label>
+            <!-- Dropdown menu for selecting room type -->
+            <select class="form-select" id="roomType" name="roomType" required onchange="fillRoomDetails()">
+                <!-- Iterate over the RoomType enum values to populate the dropdown -->
+                <option th:each="type : ${T(com.example.hotelapplication.enums.RoomType).values()}" th:value="${type}"
+                        th:text="${type}" th:selected="${type == room.roomType}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="roomCapacity" class="form-label">Room Capacity</label>
+            <input type="number" class="form-control" id="roomCapacity" name="roomCapacity" th:value="${room.roomCapacity}" required>
+            <div class="invalid-feedback">Room capacity is required</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="room-rate-label">Room Rate</label>
+            <!-- Centered Room Rate label -->
+            <div class="rate">
+                <input type="radio" id="star5" name="roomRate" value="5" th:checked="${room.roomRate == 5}"/>
+                <label for="star5" title="text">5 stars</label>
+                <input type="radio" id="star4" name="roomRate" value="4" th:checked="${room.roomRate == 4}"/>
+                <label for="star4" title="text">4 stars</label>
+                <input type="radio" id="star3" name="roomRate" value="3" th:checked="${room.roomRate == 3}"/>
+                <label for="star3" title="text">3 stars</label>
+                <input type="radio" id="star2" name="roomRate" value="2" th:checked="${room.roomRate == 2}"/>
+                <label for="star2" title="text">2 stars</label>
+                <input type="radio" id="star1" name="roomRate" value="1" th:checked="${room.roomRate == 1}"/>
+                <label for="star1" title="text">1 star</label>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="roomDescription" class="room-rate-label">Room Description</label>
+            <textarea class="form-control" id="roomDescription" name="roomDescription" required th:text="${room.roomDescription}"></textarea>
+            <div class="invalid-feedback">Room description is required</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="roomCost" class="form-label">Room Cost</label>
+            <input type="number" class="form-control" id="roomCost" name="roomCost" th:value="${room.roomCost}" required>
+            <div class="invalid-feedback">Room cost is required</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Select Services for the Room</label>
+            <div class="form-check">
+                <!-- Iterate over the list of all services to display checkboxes -->
+                <div th:each="service : ${allServices}">
+                    <input class="form-check-input" type="checkbox" th:id="'serviceCheckBox_' +${service.serviceId}" th:value="${service.serviceId}" name="servicesIds"
+                           th:checked="${#lists.contains(room.services.![serviceId], service.serviceId)}">
+                    <label class="form-check-label" th:for="'serviceCheckBox_' + ${service.serviceId}" th:text="${service.serviceName}"></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<script>
+    function previewImage(event) {
+        var input = event.target;
+        var reader = new FileReader();
+        reader.onload = function () {
+            var image = document.getElementById('imagePreview');
+            image.src = reader.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+</script>
+
+<script>
+    function fillRoomDetails() {
+        var roomType = document.getElementById("roomType").value;
+        var roomCapacityInput = document.getElementById("roomCapacity");
+        var roomDescriptionInput = document.getElementById("roomDescription");
+        var roomCostInput = document.getElementById("roomCost");
+
+        // Set values based on selected room type
+        switch (roomType) {
+            case "KING":
+                roomCapacityInput.value = 2;
+                roomDescriptionInput.value = "Perfect for a couple";
+                roomCostInput.value = 90;
+                break;
+            case "QUEEN":
+                roomCapacityInput.value = 4;
+                roomDescriptionInput.value = "Perfect for a family or a trip with friends";
+                roomCostInput.value = 120;
+                break;
+
+            case "APARTMENT_KING":
+                roomCapacityInput.value = 4;
+                roomDescriptionInput.value = "Perfect for a double couple trip. Each couple has a private room in the same place.";
+                roomCostInput.value = 140;
+                break;
+
+            case "APARTMENT_QUEEN":
+                roomCapacityInput.value = 8;
+                roomDescriptionInput.value = "Perfect for a double family trip. Each family has a private room in the same place.";
+                roomCostInput.value = 160;
+                break;
+            case "KING_DELUXE":
+                roomCapacityInput.value = 2;
+                roomDescriptionInput.value = "Perfect for a couple with all the luxury services included";
+                roomCostInput.value = 140;
+                break;
+            case "QUEEN_DELUXE":
+                roomCapacityInput.value = 4;
+                roomDescriptionInput.value = "Perfect for a family or group of friends with all the luxury services included";
+                roomCostInput.value = 160;
+                break;
+            case "APARTMENT_KING_DELUXE":
+                roomCapacityInput.value = 4;
+                roomDescriptionInput.value = "Perfect for a double couple trip. Each couple has a private room in the same place. All the deluxe services are included.";
+                roomCostInput.value = 180;
+                break;
+            case "APARTMENT_QUEEN_DELUXE":
+                roomCapacityInput.value = 8;
+                roomDescriptionInput.value = "Perfect for a double family trip. Each family has a private room in the same place. All the deluxe services are included.";
+                roomCostInput.value = 200;
+                break;
+            // Add cases for other room types as needed
+            default:
+            // Handle default case or leave empty
+        }
+    }
+</script>
+
+</body>
+</html>

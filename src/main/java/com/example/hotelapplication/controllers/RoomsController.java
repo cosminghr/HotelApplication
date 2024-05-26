@@ -41,7 +41,7 @@ public class RoomsController {
     @GetMapping("/all")
     public ModelAndView getRooms() {
         List<RoomsDTO> rooms = roomsServices.findRooms();
-        ModelAndView modelAndView = new ModelAndView("rooms");
+        ModelAndView modelAndView = new ModelAndView("/admin/rooms/rooms");
         modelAndView.addObject("rooms", rooms);
         return modelAndView;
     }
@@ -54,7 +54,7 @@ public class RoomsController {
     @GetMapping("/allRooms")
     public ModelAndView getRoomsUser() {
         List<RoomsDTO> rooms = roomsServices.findRooms();
-        ModelAndView modelAndView = new ModelAndView("bookRooms");
+        ModelAndView modelAndView = new ModelAndView("/client/bookRooms");
         modelAndView.addObject("rooms", rooms);
         return modelAndView;
     }
@@ -84,7 +84,7 @@ public class RoomsController {
     @GetMapping("/createRooms")
     public ModelAndView create() {
         List<ServicesDTO> services = roomsServices.findAllServices();
-        ModelAndView modelAndView = new ModelAndView("createRooms");
+        ModelAndView modelAndView = new ModelAndView("/admin/rooms/createRooms");
         modelAndView.addObject("services", services);
         return modelAndView;
     }
@@ -121,7 +121,7 @@ public class RoomsController {
         RoomsDTO room = roomsServices.findRoomById(id);
         List<ServicesDTO> services = room.getServices();
         List<ServicesDTO> allServices = roomsServices.findAllServices();
-        ModelAndView modelAndView = new ModelAndView("editRooms");
+        ModelAndView modelAndView = new ModelAndView("/admin/rooms/editRooms");
         modelAndView.addObject("room", room);
         modelAndView.addObject("services", services);
         modelAndView.addObject("allServices", allServices);
