@@ -97,6 +97,7 @@ public class ReportPDFService extends ReportAbstarct {
 
         // table content
         PdfPTable tableData = new PdfPTable(12);
+        writeTableData(tableData, data);
         writeTableData1(tableData, data);
         document.add(tableData);
 

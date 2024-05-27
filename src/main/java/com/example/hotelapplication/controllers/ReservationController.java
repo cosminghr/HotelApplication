@@ -28,7 +28,6 @@ import java.util.UUID;
 @RequestMapping(value = "/reservations")
 public class ReservationController {
     private final ReservationServices reservationServices;
-    private final PersonRepository personRepository;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReservationController.class);
@@ -37,11 +36,10 @@ public class ReservationController {
      * Constructor for ReservationController.
      *
      * @param reservationServices            The service for handling Reservation-related operations.
-     * @param personRepository               The repository for accessing person data.
      */
-    public ReservationController(ReservationServices reservationServices, PersonRepository personRepository) {
+    public ReservationController(ReservationServices reservationServices) {
         this.reservationServices = reservationServices;
-        this.personRepository = personRepository;
+
     }
 
     /**
@@ -181,7 +179,7 @@ public class ReservationController {
                                               @RequestParam("roomIds") List<UUID> idRooms,
                                               @RequestParam("startDate") LocalDate startDate,
                                               @RequestParam("endDate") LocalDate endDate,
-                                              HttpServletRequest request) {
+                                              HttpServletRequest request) throws EmailSendingException {
         PersonDTO authenticatedPerson = (PersonDTO) request.getSession().getAttribute("authenticatedPerson");
         PersonDTO personDTO = reservationServices.findPersonByIdInReservation(authenticatedPerson.getId());
         List<RoomsDTO> roomsDTOs = new ArrayList<>();
@@ -196,6 +194,7 @@ public class ReservationController {
         reservationServices.insertReservations(reservationDTO);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/reservations/userReservations");
+        reservationServices.sendEmailToUser(reservationDTO);
         return modelAndView;
     }
 
