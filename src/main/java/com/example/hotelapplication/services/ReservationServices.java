@@ -13,17 +13,30 @@ import com.example.hotelapplication.entities.Reservation;
 import com.example.hotelapplication.entities.Rooms;
 import com.example.hotelapplication.enums.StatusEmail;
 import com.example.hotelapplication.exceptions.EmailSendingException;
+import com.example.hotelapplication.generator.ReportPDFService;
 import com.example.hotelapplication.repositories.PersonRepository;
 import com.example.hotelapplication.repositories.ReservationRepository;
 import com.example.hotelapplication.repositories.RoomsRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -287,17 +300,55 @@ public class ReservationServices {
 
     }
 
-    public void sendEmailToUser(PersonDTO personDTO, String emailTitle, String emailDescription) throws EmailSendingException {
-        EmailDTO emailDTO = new EmailDTO();
-        emailDTO.setEmailTo(personDTO.getEmail());
-        emailDTO.setEmailFrom("ghermancosmin112@gmail.com");
-        emailDTO.setTitle(emailTitle);
+    public void sendEmailToUser(ReservationDTO reservationDTO) throws EmailSendingException {
+        // Create email request
+        EmailDTO emailRequest = new EmailDTO();
+        emailRequest.setId(reservationDTO.getPerson().getId());
+        emailRequest.setName(reservationDTO.getPerson().getName());
+        emailRequest.setOwnerRef("MountainHotel");
+        emailRequest.setEmailFrom("ghermancosmin112@gmail.com");
+        emailRequest.setStartDate(reservationDTO.getReservationStart());
+        emailRequest.setEndDate(reservationDTO.getReservationEnd());
+        emailRequest.setEmailTo(reservationDTO.getPerson().getEmail());
+        emailRequest.setTitle("Reservation Confirmed!");
+        emailRequest.setReservationId(reservationDTO.getReservationId());
+        emailRequest.setReservationCost(reservationDTO.getReservationFinalCost());
+        emailRequest.setEmailDate(LocalDateTime.now());
+        emailRequest.setEmailStatus(StatusEmail.IN_PROGRESS);
+        List<Integer> roomNumbers = new ArrayList<>();
+        for (RoomsDTO roomsDTO : reservationDTO.getRooms()) {
+            roomNumbers.add(roomsDTO.getRoomNumber());
+        }
+        String roomNString = roomNumbers.toString();
+        emailRequest.setRoomNumbers(roomNString);
 
+        // Generate PDF file
+        ReportPDFService reportPDFService = new ReportPDFService();
+        byte[] pdfBytes;
+        try {
+            pdfBytes = reportPDFService.generatePdfBytes(List.of(reservationDTO));
+        } catch (IOException e) {
+            throw new EmailSendingException("Failed to generate PDF");
+        }
+        ByteArrayResource pdfResource = new ByteArrayResource(pdfBytes) {
+            @Override
+            public String getFilename() {
+                return "reservation.pdf";
+            }
+        };
+
+        // Set headers and body for the request
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-        HttpEntity<EmailDTO> requestEntity = new HttpEntity<>(emailDTO, headers);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", pdfResource);
+        body.add("emailRequest", emailRequest);
 
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        // Send request
+        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Boolean> responseEntity = restTemplate.exchange(
                 "http://localhost:8081/emails/sending-email",
                 HttpMethod.POST,
@@ -311,6 +362,7 @@ public class ReservationServices {
             throw new EmailSendingException("Eroare la trimiterea email-ului!");
         }
     }
+
 
 
 

@@ -8,31 +8,122 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url("/imagesLogin/login.png") no-repeat;
+            background-size: cover;
+            overflow: hidden; /* Prevent body from scrolling */
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%; /* Adjust the width as needed */
+            height: 90vh; /* Fixed height for the container */
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            color: black;
+            border-radius: 12px;
+            padding: 30px 40px;
+            overflow-y: scroll; /* Enable vertical scrolling */
+        }
+
+        .container h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .table-container {
+            flex-grow: 1; /* Occupy remaining space */
+        }
+
+        .filter-container {
+            width: 300px; /* Adjust the width as needed */
+            padding: 20px;
+            border-left: 1px solid #ccc;
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .room-image {
+            max-width: 500px;
+            border-right: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-details .fas.fa-star {
+            color: #ffc107; /* Yellow star color */
+        }
+
+        .room-details {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            color: #fff; /* White text color */
+            border-radius: 10px; /* Rounded corners */
+            margin-left: 20px; /* Add some space from the image */
+            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 80vh; /* Set maximum height to prevent overflow */
+        }
+
+        .room-details th {
+            font-weight: bold; /* Make table headers bold */
+            width: 30%; /* Adjust column width */
+        }
+
+        .room-details td {
+            padding: 5px 10px; /* Add padding to table cells */
+        }
+
+        .room-details .table {
+            background: transparent; /* Transparent table background */
+        }
+
+        .room-details .table-hover tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1); /* Transparent hover effect */
+        }
+
         .create-btn {
             background-color: #28a745;
             color: #fff;
             border: none;
         }
-        .next-btn {
-            background-color: #007bff;
-            color: #fff;
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #000;
             border: none;
         }
-        .container-fluid {
-            display: flex;
-        }
-        .filter-container {
-            min-width: 200px;
-            padding: 20px;
-            border-left: 1px solid #ccc;
-        }
-        .table-container {
-            flex-grow: 1;
+
+        .btn-danger {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-<div class="container-fluid">
+<div class="container">
     <div class="table-container">
         <h1 class="text-center my-4">Rooms</h1>
 
@@ -89,6 +180,8 @@
                 <button type="button" id="next-step-btn" class="btn btn-primary next-btn">Next Step</button>
             </div>
         </form>
+
+
 
         <div id="step-2" style="display: none;">
             <h2 class="text-center my-4">Step 2: Fill in Dates and Person's Name</h2>
@@ -276,3 +369,5 @@
 
 </body>
 </html>
+
+

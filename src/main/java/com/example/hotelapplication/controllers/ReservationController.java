@@ -162,7 +162,7 @@ public class ReservationController {
         reservationDTO.setReservationId(reservationId);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("redirect:/reservations/all");
-        reservationServices.emailCompose(reservationDTO);
+        reservationServices.sendEmailToUser(reservationDTO);
         return modelAndView;
     }
 

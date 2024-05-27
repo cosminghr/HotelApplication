@@ -17,7 +17,16 @@ public class ReportController {
 
     @GetMapping("/pdf")
     public void exportToPdf(HttpServletResponse response) throws IOException {
-        this.userReportService.exportToPdf(response);
+        userReportService.exportToPdf(response);
     }
 
+    @GetMapping("/csv")
+    public void exportToCSV(HttpServletResponse response) throws IOException {
+        userReportService.exportToCSV(response);
+    }
+
+    @GetMapping("/txt")
+    public void exportToTXT(HttpServletResponse response) throws IOException {
+        userReportService.exportToTXT(response);
+    }
 }
